@@ -8,7 +8,9 @@
     "dev": "nodemon",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose -f ../docker-compose.yml up -d",
+    "db:down": "docker compose -f ../docker-compose.yml down"
   },
   "dependencies": {
     "dotenv": "^18.0.8",

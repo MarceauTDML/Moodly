@@ -10,9 +10,15 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:up": "docker compose -f ../docker-compose.yml up -d",
-    "db:down": "docker compose -f ../docker-compose.yml down"
+    "db:down": "docker compose -f ../docker-compose.yml down",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
     "pino": "^10.4.0",
@@ -23,6 +29,7 @@
     "@types/node": "^26.6.5",
     "nodemon": "^3.1.14",
     "pino-pretty": "^13.2.0",
+    "prisma": "^6.19.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

@@ -1,0 +1,176 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  COLLABORATEUR
+  MANAGER
+  ADMIN
+}
+
+enum MoodLevel {
+  EPANOUI
+  BIEN
+  MOYEN
+  STRESSE
+}
+
+enum MoodStatus {
+  PARFAIT
+  MOYENNE
+  PREOCCUPANT
+}
+
+enum TagCategory {
+  CHARGE_DE_TRAVAIL
+  AMBIANCE_EQUIPE
+  OUTILS_MATERIEL
+  CLARTE_DES_MISSIONS
+  SOUTIEN_MANAGER
+  RECONNAISSANCE
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  domain    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams Team[]
+  users User[]
+
+  @@map("companies")
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  companyId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  members   TeamMember[]
+  moods     MoodEntry[]
+  snapshots MoodSnapshot[]
+
+  @@index([companyId])
+  @@map("teams")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String
+  firstName        String
+  lastName         String
+  role             Role      @default(COLLABORATEUR)
+  companyId        String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  pushToken                 String?
+  dailyReminderEnabled      Boolean @default(true)
+  emailNotificationsEnabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  memberships TeamMember[]
+  checkins    UserDailyCheckin[]
+
+  @@index([companyId])
+  @@map("users")
+}
+
+model TeamMember {
+  id       String   @id @default(uuid())
+  userId   String
+  teamId   String
+  isLead   Boolean  @default(false)
+  joinedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@index([teamId])
+  @@map("team_members")
+}
+
+model UserDailyCheckin {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("user_daily_checkins")
+}
+
+model MoodEntry {
+  id          String    @id @default(uuid())
+  teamId      String
+  mood        MoodLevel
+  comment     String?   @db.Text
+  submittedAt DateTime  @default(now())
+
+  team Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  tags MoodEntryTag[]
+
+  @@index([teamId, submittedAt])
+  @@map("mood_entries")
+}
+
+model Tag {
+  id        String      @id @default(uuid())
+  code      TagCategory @unique
+  label     String
+  createdAt DateTime    @default(now())
+
+  entries MoodEntryTag[]
+
+  @@map("tags")
+}
+
+model MoodEntryTag {
+  id          String @id @default(uuid())
+  moodEntryId String
+  tagId       String
+
+  moodEntry MoodEntry @relation(fields: [moodEntryId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([moodEntryId, tagId])
+  @@index([tagId])
+  @@map("mood_entry_tags")
+}
+
+model MoodSnapshot {
+  id                 String     @id @default(uuid())
+  teamId             String
+  date               DateTime   @db.Date
+  averageScore       Float
+  status             MoodStatus
+  totalResponses     Int
+  flourishingCount   Int
+  strugglingCount    Int
+  trendPercentage30d Float?
+  createdAt          DateTime   @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, date])
+  @@index([teamId, date])
+  @@map("mood_snapshots")
+}

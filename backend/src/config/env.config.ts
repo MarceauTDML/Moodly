@@ -1,15 +1,11 @@
-import "dotenv/config";
-import { z } from "zod";
+import 'dotenv/config';
+import { z } from 'zod';
 
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
-  CORS_ORIGINS: z.string().default("*"),
-  LOG_LEVEL: z
-    .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
-    .default("info"),
+  CORS_ORIGINS: z.string().default('*'),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   DATABASE_URL: z.string().min(1),
 });
@@ -17,13 +13,11 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  const issues = parsed.error.issues
-    .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
-    .join("\n");
+  const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
   process.stderr.write(`Configuration invalide :\n${issues}\n`);
   process.exit(1);
 }
 
 export const env = parsed.data;
-export const isProd = env.NODE_ENV === "production";
-export const isTest = env.NODE_ENV === "test";
+export const isProd = env.NODE_ENV === 'production';
+export const isTest = env.NODE_ENV === 'test';

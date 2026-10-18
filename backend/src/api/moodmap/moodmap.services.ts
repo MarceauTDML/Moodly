@@ -1,12 +1,21 @@
-import type { MoodSnapshot, Team } from '@prisma/client';
-import { CHART_ZONES, MIN_RESPONSES, STATUS_CONTENT, TREND_WINDOW_DAYS } from '../../config/mood.config';
-import { hasEnoughResponses, maskBelowThreshold } from '../../services/anonymization.service';
-import { findTrendReference } from '../../services/mood-score.service';
+import { MoodLevel, type MoodSnapshot, type Team } from '@prisma/client';
+import { CHART_ZONES, MIN_RESPONSES, MOOD_LABELS, STATUS_CONTENT, TREND_WINDOW_DAYS } from '../../config/mood.config';
+import { anonymizeComments, hasEnoughResponses, maskBelowThreshold } from '../../services/anonymization.service';
+import { buildStats, findTrendReference } from '../../services/mood-score.service';
 import type { HistoryPoint, MoodHighlight, MoodMapSummary, MoodTrend } from '../../types/mood.types';
-import { addDays, dayRange, formatDay, formatTime, today } from '../../utils/date.util';
-import { percentage, round1, statusFromScore, trendPercentage, trendPoints, weightedAverage } from '../../utils/score.util';
+import type { TagStat } from '../../types/tag.types';
+import { addDays, dayRange, formatDay, formatTime, startOfIsoWeek, today } from '../../utils/date.util';
+import {
+  averageScore,
+  percentage,
+  round1,
+  statusFromScore,
+  trendPercentage,
+  trendPoints,
+  weightedAverage,
+} from '../../utils/score.util';
 import { moodmapRepo } from './moodmap.repo';
-import type { HistoryQuery } from './moodmap.validators';
+import type { EvolutionQuery, HistoryQuery, TrendsQuery } from './moodmap.validators';
 
 const teamRef = (team: Team) => ({ id: team.id, name: team.name });
 
@@ -33,6 +42,9 @@ const aggregateSnapshots = (snapshots: MoodSnapshot[]) => {
   const masked = maskBelowThreshold(score, totalResponses);
   return { totalResponses, averageScore: masked, status: masked === null ? null : statusFromScore(masked) };
 };
+
+const shortDate = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
+const monthLabel = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
 export const moodmapService = {
   async getSummary(team: Team): Promise<MoodMapSummary> {
@@ -114,6 +126,120 @@ export const moodmapService = {
       zones: CHART_ZONES,
       period: aggregateSnapshots(snapshots),
       points,
+    };
+  },
+
+  async getTrends(team: Team, { days }: TrendsQuery) {
+    const end = today();
+    const from = addDays(end, -(days - 1));
+    const previousFrom = addDays(from, -days);
+
+    const [entries, previousEntries, allTags, teamSize] = await Promise.all([
+      moodmapRepo.findEntries(team.id, from, addDays(end, 1)),
+      moodmapRepo.findEntries(team.id, previousFrom, from),
+      moodmapRepo.findAllTags(),
+      moodmapRepo.countVoters(team.id),
+    ]);
+
+    const total = entries.length;
+    const base = { team: teamRef(team), periodDays: days, from: formatDay(from), to: formatDay(end), minResponses: MIN_RESPONSES, totalResponses: total };
+
+    if (!hasEnoughResponses(total)) {
+      return { ...base, hasEnoughData: false, averageScore: null, status: null, trend: null, moods: [], tags: [], comments: [], flourishing: null, struggling: null, participation: null };
+    }
+
+    const stats = buildStats(entries.map((e) => e.mood));
+    const score = stats.averageScore!;
+    const previousScore = hasEnoughResponses(previousEntries.length) ? averageScore(previousEntries.map((e) => e.mood)) : null;
+
+    const moods = Object.values(MoodLevel).map((code) => ({
+      code,
+      label: MOOD_LABELS[code],
+      count: stats.distribution[code],
+      percentage: percentage(stats.distribution[code], total),
+    }));
+
+    const tags: TagStat[] = allTags
+      .map(({ code, label }) => {
+        const tagged = entries.filter((e) => e.tags.some((t) => t.tag.code === code));
+        const tagScore = averageScore(tagged.map((e) => e.mood));
+        return {
+          code,
+          label,
+          count: tagged.length,
+          percentage: percentage(tagged.length, total),
+          averageScore: maskBelowThreshold(tagScore, tagged.length),
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    return {
+      ...base,
+      hasEnoughData: true,
+      averageScore: score,
+      status: statusFromScore(score),
+      trend: previousScore === null ? null : buildTrend(score, previousScore, days),
+      flourishing: { count: stats.flourishingCount, percentage: percentage(stats.flourishingCount, total) },
+      struggling: { count: stats.strugglingCount, percentage: percentage(stats.strugglingCount, total) },
+      participation: {
+        teamSize,
+        averageDailyResponses: round1(total / days),
+        rate: percentage(total, teamSize * days),
+      },
+      moods,
+      tags,
+      comments: anonymizeComments(entries.map((e) => e.comment), total),
+    };
+  },
+
+  async getEvolution(team: Team, { granularity, periods }: EvolutionQuery) {
+    const end = today();
+    const buckets: { key: string; label: string; start: Date; end: Date }[] = [];
+
+    if (granularity === 'day') {
+      for (const day of dayRange(end, periods)) {
+        buckets.push({ key: formatDay(day), label: shortDate.format(day), start: day, end: day });
+      }
+    } else if (granularity === 'week') {
+      const currentWeek = startOfIsoWeek(end);
+      for (let i = periods - 1; i >= 0; i--) {
+        const start = addDays(currentWeek, -7 * i);
+        buckets.push({ key: formatDay(start), label: `Sem. du ${shortDate.format(start)}`, start, end: addDays(start, 6) });
+      }
+    } else {
+      for (let i = periods - 1; i >= 0; i--) {
+        const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - i, 1));
+        const last = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0));
+        buckets.push({ key: formatDay(start), label: monthLabel.format(start), start, end: last });
+      }
+    }
+
+    const snapshots = await moodmapRepo.findSnapshots(team.id, buckets[0].start, end);
+    const series = buckets.map((b) => {
+      const inBucket = snapshots.filter((s) => s.date >= b.start && s.date <= b.end);
+      return { label: b.label, from: formatDay(b.start), to: formatDay(b.end > end ? end : b.end), ...aggregateSnapshots(inBucket) };
+    });
+
+    const withData = series.filter((s) => s.averageScore !== null);
+    const current = withData.at(-1) ?? null;
+    const previous = withData.at(-2) ?? null;
+
+    return {
+      team: teamRef(team),
+      granularity,
+      zones: CHART_ZONES,
+      series,
+      overall: aggregateSnapshots(snapshots),
+      comparison:
+        current && previous
+          ? {
+              current: current.averageScore,
+              previous: previous.averageScore,
+              ...buildTrend(current.averageScore!, previous.averageScore, 0),
+            }
+          : null,
+      best: withData.length ? withData.reduce((a, b) => (b.averageScore! > a.averageScore! ? b : a)) : null,
+      worst: withData.length ? withData.reduce((a, b) => (b.averageScore! < a.averageScore! ? b : a)) : null,
     };
   },
 };

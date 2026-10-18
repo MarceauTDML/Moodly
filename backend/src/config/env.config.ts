@@ -32,6 +32,10 @@ const envSchema = z.object({
   MAIL_FROM: z.string().default('Mood Map <no-reply@moodmap.app>'),
 
   MOOD_MIN_RESPONSES: z.coerce.number().int().min(1).default(3),
+
+  ENABLE_JOBS: bool('true'),
+  CRON_SNAPSHOTS: z.string().default('*/15 * * * *'),
+  CRON_DAILY_REMINDER: z.string().default('0 17 * * 1-5'),
 });
 
 const parsed = envSchema.safeParse(process.env);

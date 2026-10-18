@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import { moodsRoutes } from './api/moods/moods.routes';
 import { passwordRoutes } from './api/password/password.routes';
 import { tagsRoutes } from './api/tags/tags.routes';
 import { teamsRoutes } from './api/teams/teams.routes';
@@ -48,6 +49,7 @@ export const createApp = () => {
   api.use('/password', passwordRoutes);
   api.use('/teams', teamsRoutes);
   api.use('/tags', tagsRoutes);
+  api.use('/moods', moodsRoutes);
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

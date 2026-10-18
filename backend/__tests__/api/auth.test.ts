@@ -111,3 +111,22 @@ describe('POST /api/v1/auth/collaborators', () => {
     });
   });
 });
+
+describe('Jeton émis par /auth/login', () => {
+  it('donne accès aux routes protégées par authenticate', async () => {
+    const user = { ...baseUser, passwordHash: await hashPassword(PASSWORD), memberships: [] };
+    prismaMock.user.findUnique.mockResolvedValue(user);
+    prismaMock.company.findUnique.mockResolvedValue({ id: baseUser.companyId, name: 'Entreprise' });
+
+    const login = await request(app).post('/api/v1/auth/login').send({ email: baseUser.email, password: PASSWORD });
+    const res = await request(app).get('/api/v1/users/me').set('Authorization', `Bearer ${login.body.token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ email: baseUser.email, company: { name: 'Entreprise' }, teams: [] });
+  });
+
+  it('refuse un jeton signé avec une autre clé', async () => {
+    const res = await request(app).get('/api/v1/users/me').set('Authorization', 'Bearer abc.def.ghi');
+    expect(res.status).toBe(401);
+  });
+});

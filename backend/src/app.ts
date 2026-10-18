@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import { usersRoutes } from './api/users/users.routes';
 import { env, isTest } from './config/env.config';
 import { logger } from './config/logger.config';
 import { prisma } from './config/prisma.config';
@@ -40,6 +41,7 @@ export const createApp = () => {
   const api = express.Router();
   api.use(apiLimiter);
   api.use('/auth', authRouter);
+  api.use('/users', usersRoutes);
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

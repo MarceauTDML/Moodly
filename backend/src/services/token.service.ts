@@ -45,8 +45,16 @@ const verify = <T extends { type: string }>(token: string, secret: string, type:
   }
 };
 
-export const verifyAccessToken = (token: string) =>
-  verify<AccessTokenPayload>(token, jwtConfig.access.secret, 'access');
+export const verifyAccessToken = (token: string): { sub: string } => {
+  try {
+    const payload = jwt.verify(token, jwtConfig.access.secret) as { sub?: string; type?: string };
+    if (!payload.sub || (payload.type !== undefined && payload.type !== 'access')) throw new Error('wrong token type');
+    return { sub: payload.sub };
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) throw ApiError.unauthorized('Session expirée', 'TOKEN_EXPIRED');
+    throw ApiError.unauthorized('Jeton invalide', 'INVALID_TOKEN');
+  }
+};
 
 export const verifyRefreshToken = (token: string) =>
   verify<RefreshTokenPayload>(token, jwtConfig.refresh.secret, 'refresh');

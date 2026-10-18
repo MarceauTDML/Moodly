@@ -5,6 +5,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import { passwordRoutes } from './api/password/password.routes';
+import { tagsRoutes } from './api/tags/tags.routes';
 import { teamsRoutes } from './api/teams/teams.routes';
 import { usersRoutes } from './api/users/users.routes';
 import { env, isTest } from './config/env.config';
@@ -46,6 +47,7 @@ export const createApp = () => {
   api.use('/users', usersRoutes);
   api.use('/password', passwordRoutes);
   api.use('/teams', teamsRoutes);
+  api.use('/tags', tagsRoutes);
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

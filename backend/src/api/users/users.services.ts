@@ -1,9 +1,19 @@
 import type { User } from '@prisma/client';
-import type { PublicUser } from '../../types/auth.types';
+import { PENDING_ACTIVATION_HASH } from '../../config/auth.config';
+import { emailService } from '../../services/email.service';
+import type { AuthUser, PublicUser } from '../../types/auth.types';
 import { hashPassword, verifyPassword } from '../../utils/hash.util';
 import { ApiError } from '../../utils/response.util';
 import { usersRepo } from './users.repo';
-import type { ChangePasswordInput, NotificationSettingsInput, PushTokenInput, UpdateMeInput } from './users.validators';
+import type {
+  ChangePasswordInput,
+  CreateUserInput,
+  ListUsersQuery,
+  NotificationSettingsInput,
+  PushTokenInput,
+  UpdateMeInput,
+  UpdateUserInput,
+} from './users.validators';
 
 const toPublicUser = (user: User): PublicUser => ({
   id: user.id,
@@ -66,5 +76,61 @@ export const usersService = {
 
   async setPushToken(userId: string, { pushToken }: PushTokenInput) {
     return toNotificationSettings(await usersRepo.update(userId, { pushToken }));
+  },
+
+  list(companyId: string, query: ListUsersQuery) {
+    return usersRepo.list(companyId, query);
+  },
+
+  async getById(actor: AuthUser, userId: string) {
+    const user = await usersRepo.findInCompany(userId, actor.companyId);
+    if (!user) throw ApiError.notFound('Utilisateur introuvable');
+    return usersRepo.findDetailed(userId);
+  },
+
+  async create(actor: AuthUser, input: CreateUserInput) {
+    const company = await usersRepo.findCompany(actor.companyId);
+    if (!company) throw ApiError.notFound('Entreprise introuvable');
+
+    const domain = input.email.split('@')[1];
+    if (domain !== company.domain.toLowerCase()) {
+      throw ApiError.badRequest(`L'e-mail doit appartenir au domaine @${company.domain}`, 'INVALID_EMAIL_DOMAIN');
+    }
+    if (input.teamId && !(await usersRepo.findTeamInCompany(input.teamId, actor.companyId))) {
+      throw ApiError.notFound('Équipe introuvable', 'TEAM_NOT_FOUND');
+    }
+
+    // Même principe que POST /auth/collaborators : le compte est activé via POST /auth/register
+    const user = await usersRepo.createWithMembership(
+      {
+        email: input.email,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        role: input.role,
+        companyId: actor.companyId,
+        passwordHash: PENDING_ACTIVATION_HASH,
+      },
+      input.teamId ? { teamId: input.teamId, isLead: input.isLead } : undefined,
+    );
+
+    await emailService.sendWelcome(user.email, user.firstName);
+    return usersRepo.findDetailed(user.id);
+  },
+
+  async update(actor: AuthUser, userId: string, input: UpdateUserInput) {
+    const target = await usersRepo.findInCompany(userId, actor.companyId);
+    if (!target) throw ApiError.notFound('Utilisateur introuvable');
+    if (target.id === actor.id && input.role && input.role !== actor.role) {
+      throw ApiError.badRequest('Vous ne pouvez pas modifier votre propre rôle', 'SELF_ROLE_CHANGE');
+    }
+    await usersRepo.update(userId, input);
+    return usersRepo.findDetailed(userId);
+  },
+
+  async remove(actor: AuthUser, userId: string) {
+    if (userId === actor.id) throw ApiError.badRequest('Vous ne pouvez pas supprimer votre propre compte', 'SELF_DELETE');
+    const target = await usersRepo.findInCompany(userId, actor.companyId);
+    if (!target) throw ApiError.notFound('Utilisateur introuvable');
+    await usersRepo.delete(userId);
   },
 };

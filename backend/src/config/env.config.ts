@@ -12,6 +12,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   CORS_ORIGINS: z.string().default('*'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  TIMEZONE: z.string().default('Europe/Paris'),
 
   DATABASE_URL: z.string().min(1),
 
@@ -29,6 +30,8 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default('Mood Map <no-reply@moodmap.app>'),
+
+  MOOD_MIN_RESPONSES: z.coerce.number().int().min(1).default(3),
 });
 
 const parsed = envSchema.safeParse(process.env);

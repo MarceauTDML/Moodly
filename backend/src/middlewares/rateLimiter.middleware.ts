@@ -11,3 +11,13 @@ export const apiLimiter = rateLimit({
   skip: () => isTest,
   message: message('Trop de requêtes, réessayez plus tard.'),
 });
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  skip: () => isTest,
+  message: message('Trop de tentatives, réessayez dans quelques minutes.'),
+});

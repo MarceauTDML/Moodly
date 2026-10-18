@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import { passwordRoutes } from './api/password/password.routes';
 import { usersRoutes } from './api/users/users.routes';
 import { env, isTest } from './config/env.config';
 import { logger } from './config/logger.config';
@@ -42,6 +43,7 @@ export const createApp = () => {
   api.use(apiLimiter);
   api.use('/auth', authRouter);
   api.use('/users', usersRoutes);
+  api.use('/password', passwordRoutes);
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

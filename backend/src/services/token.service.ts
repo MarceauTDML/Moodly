@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { jwtConfig } from '../config/jwt.config';
 import type { AccessTokenPayload, AuthTokens, RefreshTokenPayload } from '../types/auth.types';
-import { sha256 } from '../utils/hash.util';
+import { randomToken, sha256 } from '../utils/hash.util';
 import { ApiError } from '../utils/response.util';
 
 interface TokenSubject {
@@ -58,3 +58,8 @@ export const verifyAccessToken = (token: string): { sub: string } => {
 
 export const verifyRefreshToken = (token: string) =>
   verify<RefreshTokenPayload>(token, jwtConfig.refresh.secret, 'refresh');
+
+export const generateResetToken = (): { token: string; hash: string } => {
+  const token = randomToken(32);
+  return { token, hash: sha256(token) };
+};

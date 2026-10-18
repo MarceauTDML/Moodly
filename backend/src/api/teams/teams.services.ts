@@ -1,7 +1,8 @@
 import type { Team } from '@prisma/client';
 import type { AuthUser } from '../../types/auth.types';
+import { ApiError } from '../../utils/response.util';
 import { teamsRepo } from './teams.repo';
-import type { CreateTeamInput, UpdateTeamInput } from './teams.validators';
+import type { AddMemberInput, CreateTeamInput, UpdateTeamInput } from './teams.validators';
 
 type TeamRow = Awaited<ReturnType<typeof teamsRepo.listForCompany>>[number];
 
@@ -44,5 +45,27 @@ export const teamsService = {
 
   async remove(team: Team) {
     await teamsRepo.delete(team.id);
+  },
+
+  async addMember(user: AuthUser, team: Team, input: AddMemberInput) {
+    const target = await teamsRepo.findUserInCompany(input.userId, user.companyId);
+    if (!target) throw ApiError.notFound('Utilisateur introuvable');
+    if (input.isLead && target.role === 'COLLABORATEUR') {
+      throw ApiError.badRequest('Seul un MANAGER ou un ADMIN peut être responsable d’équipe', 'INVALID_LEAD');
+    }
+    return toMemberDto(await teamsRepo.addMember(team.id, input.userId, input.isLead));
+  },
+
+  async updateMember(user: AuthUser, team: Team, userId: string, isLead: boolean) {
+    const target = await teamsRepo.findUserInCompany(userId, user.companyId);
+    if (!target) throw ApiError.notFound('Utilisateur introuvable');
+    if (isLead && target.role === 'COLLABORATEUR') {
+      throw ApiError.badRequest('Seul un MANAGER ou un ADMIN peut être responsable d’équipe', 'INVALID_LEAD');
+    }
+    return toMemberDto(await teamsRepo.updateMember(team.id, userId, isLead));
+  },
+
+  async removeMember(team: Team, userId: string) {
+    await teamsRepo.removeMember(team.id, userId);
   },
 };

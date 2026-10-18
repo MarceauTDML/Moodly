@@ -14,4 +14,16 @@ export const moodmapRepo = {
     }),
 
   countVoters: (teamId: string) => prisma.teamMember.count({ where: { teamId, isLead: false } }),
+
+  findEntries: (teamId: string, from: Date, toExclusive: Date) =>
+    prisma.moodEntry.findMany({
+      where: { teamId, submittedAt: { gte: from, lt: toExclusive } },
+      select: {
+        mood: true,
+        comment: true,
+        tags: { select: { tag: { select: { code: true, label: true } } } },
+      },
+    }),
+
+  findAllTags: () => prisma.tag.findMany({ select: { code: true, label: true }, orderBy: { createdAt: 'asc' } }),
 };

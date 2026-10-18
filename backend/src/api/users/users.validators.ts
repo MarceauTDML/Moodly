@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { z } from 'zod';
 
 const name = z.string().trim().min(1).max(80);
@@ -8,6 +9,7 @@ export const emailSchema = z
   .toLowerCase()
   .pipe(z.email({ error: 'E-mail invalide' }));
 
+// Mêmes règles que l'activation du compte (POST /auth/register) : recommandations ANSSI / CNIL
 export const passwordSchema = z
   .string({ error: 'Le mot de passe est requis' })
   .min(12, { error: 'Le mot de passe doit faire au moins 12 caractères' })
@@ -16,6 +18,10 @@ export const passwordSchema = z
   .regex(/[a-z]/, { error: 'Il faut au moins une lettre minuscule' })
   .regex(/[0-9]/, { error: 'Il faut au moins un chiffre' })
   .regex(/[^a-zA-Z0-9]/, { error: 'Il faut au moins un symbole (!, @, #, etc.)' });
+
+export const userIdParamsSchema = z.object({
+  userId: z.uuid({ error: 'Identifiant invalide' }),
+});
 
 export const updateMeSchema = z
   .object({ firstName: name.optional(), lastName: name.optional() })
@@ -42,7 +48,29 @@ export const pushTokenSchema = z.object({
     .nullable(),
 });
 
+export const listUsersQuerySchema = z.object({
+  role: z.enum(Role).optional(),
+  search: z.string().trim().max(100).optional(),
+});
+
+export const createUserSchema = z.object({
+  email: emailSchema,
+  firstName: name,
+  lastName: name,
+  role: z.enum(Role).default(Role.COLLABORATEUR),
+  teamId: z.uuid().optional(),
+  isLead: z.boolean().default(false),
+});
+
+export const updateUserSchema = z
+  .object({ firstName: name.optional(), lastName: name.optional(), role: z.enum(Role).optional() })
+  .refine((v) => Object.keys(v).length > 0, { error: 'Aucune donnée à mettre à jour' });
+
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type NotificationSettingsInput = z.infer<typeof notificationSettingsSchema>;
 export type PushTokenInput = z.infer<typeof pushTokenSchema>;
+export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type UserIdParams = z.infer<typeof userIdParamsSchema>;

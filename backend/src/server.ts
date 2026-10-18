@@ -2,6 +2,7 @@ import { createApp } from './app';
 import { env } from './config/env.config';
 import { logger } from './config/logger.config';
 import { prisma } from './config/prisma.config';
+import { startScheduler, stopScheduler } from './jobs/scheduler';
 
 const bootstrap = async () => {
   await prisma.$connect();
@@ -11,8 +12,11 @@ const bootstrap = async () => {
     logger.info(`API Mood Map démarrée sur http://localhost:${env.PORT} (${env.NODE_ENV})`);
   });
 
+  if (env.ENABLE_JOBS) startScheduler();
+
   const shutdown = (signal: string) => {
     logger.info(`${signal} reçu, arrêt en cours…`);
+    stopScheduler();
     server.close(async () => {
       await prisma.$disconnect();
       process.exit(0);

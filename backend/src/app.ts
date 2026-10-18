@@ -1,3 +1,4 @@
+import authRouter from './api/auth/auth.routes';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
@@ -38,6 +39,7 @@ export const createApp = () => {
 
   const api = express.Router();
   api.use(apiLimiter);
+  api.use('/auth', authRouter);
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

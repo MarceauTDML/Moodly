@@ -10,7 +10,7 @@ export function RoleGuard({ children }: { children: ReactNode }) {
     <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
       <EmptyState
         title="Espace collaborateur"
-        description="Votre compte n'a pas accès à la vision manager. L'espace collaborateur est développé séparément par Myriam."
+        description="Votre compte n'a pas accès à la vision manager."
       />
       <Button title="Retour à la connexion" onPress={signOut} />
     </View>

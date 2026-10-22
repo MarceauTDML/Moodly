@@ -1,46 +1,62 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store';
-import { bootstrapFinished, signedIn, signedOut } from '../store/slices/authSlice';
+import {
+  bootstrapFailed,
+  bootstrapFinished,
+  bootstrapRetried,
+  signedIn,
+  signedOut,
+} from '../store/slices/authSlice';
 import { useLoginMutation } from '../store/api/authApi';
 import { baseApi } from '../store/api/baseApi';
-import { ApiRequestError, requestApi } from '../services/api.client';
+import { ApiRequestError, errorMessage, requestApi } from '../services/api.client';
 import { profileSchema } from '../services/api.schemas';
 import { secureStorage } from '../services/secureStorage.client';
 import { refreshSession } from '../services/session.client';
-import type { LoginInput } from '../types/auth.types';
+import type { LoginInput, Session } from '../types/auth.types';
 import type { Profile } from '../types/user.types';
 
+const isRejectedSession = (error: unknown) =>
+  error instanceof ApiRequestError && error.failure.status === 401;
+async function restoreSession(): Promise<Session | null> {
+  let tokens = await secureStorage.readTokens();
+  if (!tokens) return null;
+  const loadProfile = (token: string) =>
+    requestApi<Profile>('/users/me', { token, schema: profileSchema });
+  let user: Profile;
+  try {
+    user = await loadProfile(tokens.token);
+  } catch (error) {
+    // Le jeton d'accès a expiré pendant que l'application était fermée.
+    if (!isRejectedSession(error)) throw error;
+    tokens = await refreshSession(tokens.refreshToken);
+    await secureStorage.writeTokens(tokens);
+    user = await loadProfile(tokens.token);
+  }
+  return { ...tokens, user };
+}
 export function useSessionBootstrap() {
   const dispatch = useAppDispatch();
+  const attempt = useAppSelector((s) => s.auth.bootstrapAttempt);
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        let tokens = await secureStorage.readTokens();
-        if (!tokens) return;
-        const loadProfile = (token: string) =>
-          requestApi<Profile>('/users/me', { token, schema: profileSchema });
-        let user: Profile;
-        try {
-          user = await loadProfile(tokens.token);
-        } catch (error) {
-          // Le jeton d'accès a expiré pendant que l'application était fermée.
-          if (!(error instanceof ApiRequestError && error.failure.status === 401)) throw error;
-          tokens = await refreshSession(tokens.refreshToken);
-          await secureStorage.writeTokens(tokens);
-          user = await loadProfile(tokens.token);
-        }
-        if (active) dispatch(signedIn({ ...tokens, user }));
-      } catch {
-        await secureStorage.clearTokens().catch(() => undefined);
-      } finally {
-        if (active) dispatch(bootstrapFinished());
+        const session = await restoreSession();
+        if (active) dispatch(session ? signedIn(session) : bootstrapFinished());
+      } catch (error) {
+        // Seul un refus du serveur efface la session. Une erreur réseau la conserve :
+        // l'utilisateur peut réessayer une fois le serveur ou le Wi-Fi revenu.
+        if (isRejectedSession(error)) {
+          await secureStorage.clearTokens().catch(() => undefined);
+          if (active) dispatch(bootstrapFinished());
+        } else if (active) dispatch(bootstrapFailed(errorMessage(error)));
       }
     })();
     return () => {
       active = false;
     };
-  }, [dispatch]);
+  }, [dispatch, attempt]);
 }
 export function useAuth() {
   const dispatch = useAppDispatch();
@@ -60,5 +76,6 @@ export function useAuth() {
     result.reset();
   };
   const signOut = () => dispatch(signedOut());
-  return { ...auth, signIn, signOut };
+  const retryBootstrap = () => dispatch(bootstrapRetried());
+  return { ...auth, signIn, signOut, retryBootstrap };
 }

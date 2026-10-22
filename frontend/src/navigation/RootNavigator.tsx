@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './navigation.types';
@@ -14,6 +15,9 @@ import { ProfileScreen } from '../screens/settings/ProfileScreen';
 import { NotificationSettingsScreen } from '../screens/settings/NotificationSettingsScreen';
 import { RoleGuard } from '../components/shared/RoleGuard';
 import { LoadingOverlay } from '../components/shared/LoadingOverlay';
+import { ErrorState } from '../components/shared/ErrorState';
+import { ScreenContainer } from '../components/layout/ScreenContainer';
+import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const EmployeeHome = () => (
@@ -32,9 +36,20 @@ const Trends = (props: React.ComponentProps<typeof TeamTrendsScreen>) => (
   </RoleGuard>
 );
 export function RootNavigator() {
-  const { session, bootstrapping } = useAuth();
+  const { session, bootstrapping, bootstrapError, retryBootstrap, signOut } = useAuth();
   const space = accessSpace(session?.user.role);
   if (bootstrapping) return <LoadingOverlay />;
+  if (bootstrapError)
+    return (
+      <ScreenContainer>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ErrorState error={{ message: bootstrapError }} onRetry={retryBootstrap} />
+          <View style={{ marginHorizontal: 24 }}>
+            <Button title="Se connecter avec un autre compte" onPress={signOut} />
+          </View>
+        </View>
+      </ScreenContainer>
+    );
   return (
     <NavigationContainer
       linking={{

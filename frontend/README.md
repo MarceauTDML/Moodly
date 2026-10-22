@@ -16,16 +16,16 @@ cp .env.example .env
 Dans le fichier `.env` local, renseigner `EXPO_PUBLIC_API_URL` avec l'URL du backend
 terminee par `/api/v1`. Exemples de developpement :
 
-- navigateur ou simulateur iOS sur le meme Mac : `http://localhost:3000/api/v1` ;
+- navigateur ou simulateur sur le meme ordinateur : `http://localhost:3000/api/v1` ;
 - emulateur Android : `http://10.0.2.2:3000/api/v1` ;
-- telephone physique : adresse LAN du Mac, sur le meme reseau prive.
+- telephone physique : adresse LAN de l'ordinateur, sur le meme reseau prive.
 
 ```bash
 npm run web
 ```
 
 La commande ouvre le front commun manager/collaborateur sur http://localhost:8081. Arrêter les anciens fronts avant de le lancer.
-Pour une verification uniquement sur le Mac, `npm run web -- --localhost`.
+Pour une verification uniquement sur l'ordinateur, `npm run web -- --localhost`.
 
 Sur telephone, `npm start` puis ouvrir avec une version compatible d'Expo Go.
 Cette livraison utilise Expo SDK 57 et React Native 0.86. Les modules natifs
@@ -38,7 +38,7 @@ Ne pas lancer `npm ci` a la racine du depot : les deux projets ont leur propre
 ## Backend
 
 Le backend doit tourner separement. Lire le README a la racine.
-Le front utilise le backend de la branche Rajeeva et les routes /api/v1.
+Le front utilise les routes /api/v1 du backend.
 Aucune route ne contient l'URL de votre infrastructure : seul `api.config.ts`
 lit la configuration locale. L'absence d'URL produit un message, sans connexion
 vers un serveur de demonstration.

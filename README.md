@@ -6,51 +6,45 @@ Les deux espaces utilisent **un seul front sur http://localhost:8081**. L’API 
 
 Les écrans reprennent les maquettes de Marie : couleurs lavande et bleu, typographie Inter, cartes arrondies, saisie du mood et gestion des collaborateurs.
 
-## Mettre à jour une installation existante
+## Démarrer en local
 
-Depuis la racine de votre copie du dépôt, sur la branche `Rajeeva` :
+Prérequis : Node.js 22.13 ou plus récent et Docker Desktop. Les deux projets ont chacun leur `package.json` : ne lancez pas `npm ci` à la racine.
+
+Première installation uniquement, depuis la racine :
 
 ```bash
-git switch Rajeeva
-git pull --ff-only origin Rajeeva
+docker compose up -d
 ```
 
-Conservez vos fichiers `.env` locaux. Dans `backend/.env`, vérifiez :
-
-```dotenv
-APP_URL=http://localhost:8081
-CORS_ORIGINS=http://localhost:8081
-```
-
-Dans `frontend/.env` :
-
-```dotenv
-EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
-```
-
-`APP_URL` est l’adresse ouverte par les invitations et les liens de réinitialisation. Pour un téléphone ou un autre ordinateur du même réseau privé, utilisez l’adresse LAN du Mac à la place de `localhost` dans les deux fichiers.
-
-Arrêtez les anciens fronts avec Ctrl+C avant de lancer le front commun. Gardez un seul processus Expo pour cette copie.
+Créez ensuite `backend/.env` et `frontend/.env` à partir des `.env.example` et renseignez vos secrets JWT locaux.
 
 Dans le premier terminal, depuis la racine :
 
 ```bash
 cd backend
+npm ci
 npm run prisma:generate
 npm run prisma:deploy
 npm run dev
 ```
 
-La migration ajoute trois colonnes d’invitation, sans supprimer les comptes, équipes ou réponses existants. Si les dépendances ne sont pas encore installées, exécutez `npm ci` dans ce dossier avant ces commandes.
+L’API écoute sur http://localhost:3000. Les migrations n’effacent aucune donnée existante.
 
 Dans le deuxième terminal, depuis la racine :
 
 ```bash
 cd frontend
+npm ci
 npm run web
 ```
 
-Ouvrez http://localhost:8081. Reconnectez-vous après la mise à jour pour obtenir une nouvelle session. Pour les dépendances du front, utilisez `npm ci` dans `frontend/` si nécessaire. Node.js 22.13 ou plus récent est requis.
+Ouvrez http://localhost:8081.
+
+### Tester sur téléphone avec Expo Go
+
+Le téléphone et l’ordinateur doivent être sur le même réseau Wi-Fi. Dans `frontend/.env`, remplacez `localhost` par l’adresse IP locale de l’ordinateur (par exemple `EXPO_PUBLIC_API_URL=http://192.168.1.14:3000/api/v1`), puis lancez `npm start` dans `frontend/` et scannez le QR code avec Expo Go. Sous Windows, autorisez Node.js sur les réseaux privés quand le pare-feu le demande. Expo Go doit prendre en charge le SDK Expo du projet (SDK 57).
+
+`APP_URL` (dans `backend/.env`) est l’adresse ouverte par les invitations et les liens de réinitialisation.
 
 ## Créer un compte collaborateur
 

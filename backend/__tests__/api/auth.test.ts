@@ -96,6 +96,48 @@ describe('Connexion commune aux deux espaces', () => {
   });
 });
 
+describe('Renouvellement de session', () => {
+  const login = async () => {
+    const passwordHash = await hashPassword(PASSWORD);
+    prismaMock.user.findUnique.mockResolvedValue({ ...baseUser, passwordHash, memberships: [] });
+    prismaMock.company.findUnique.mockResolvedValue({ id: baseUser.companyId, name: 'Entreprise' });
+    const res = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: baseUser.email, password: PASSWORD });
+    return { passwordHash, refreshToken: res.body.data.refreshToken as string };
+  };
+  it('échange un jeton de renouvellement contre une nouvelle session', async () => {
+    const { refreshToken } = await login();
+    expect(refreshToken).toEqual(expect.any(String));
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken });
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual({
+      token: expect.any(String),
+      refreshToken: expect.any(String),
+    });
+    const profile = await request(app)
+      .get('/api/v1/users/me')
+      .set('Authorization', `Bearer ${res.body.data.token}`);
+    expect(profile.status).toBe(200);
+  });
+  it('révoque la session après un changement de mot de passe', async () => {
+    const { refreshToken } = await login();
+    prismaMock.user.findUnique.mockResolvedValue({
+      ...baseUser,
+      passwordHash: await hashPassword('NouveauMotDePasse2026!'),
+    });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken });
+    expect(res.status).toBe(401);
+  });
+  it('refuse un jeton d’accès présenté comme jeton de renouvellement', async () => {
+    const accessToken = signAccessToken(baseUser);
+    const res = await request(app)
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: accessToken });
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('Activation par invitation', () => {
   it('exige un jeton personnel et ne permet plus une activation par e-mail seul', async () => {
     const res = await request(app)

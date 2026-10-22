@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test, mock } from 'node:test';
 import { z } from 'zod';
 import { requestApi, ApiRequestError } from '../src/services/api.client';
+import { refreshSession } from '../src/services/session.client';
 process.env.EXPO_PUBLIC_API_URL = 'https://api.example.org/api/v1';
 
 test('Le client transmet le token en en-tête et extrait le contrat success/data', async () => {
@@ -78,6 +79,23 @@ test('Le client accepte le contrat direct utilisé par la connexion', async () =
   try {
     const data = await requestApi('/auth/login', { schema: z.object({ token: z.string() }) });
     assert.deepEqual(data, { token: 'test-token' });
+  } finally {
+    stub.mock.restore();
+  }
+});
+test('Des requêtes expirées simultanément ne déclenchent qu’un seul renouvellement', async () => {
+  const stub = mock.method(globalThis, 'fetch', async (input: string | URL | Request) => {
+    assert.equal(String(input), 'https://api.example.org/api/v1/auth/refresh');
+    return new Response(
+      JSON.stringify({ success: true, data: { token: 'nouveau', refreshToken: 'suivant' } }),
+      { status: 200 },
+    );
+  });
+  try {
+    const [first, second] = await Promise.all([refreshSession('ancien'), refreshSession('ancien')]);
+    assert.equal(stub.mock.callCount(), 1);
+    assert.deepEqual(first, { token: 'nouveau', refreshToken: 'suivant' });
+    assert.deepEqual(second, first);
   } finally {
     stub.mock.restore();
   }

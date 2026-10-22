@@ -1,9 +1,14 @@
 import { PENDING_ACTIVATION_HASH } from '../../config/auth.config';
-import { signAccessToken } from '../../services/token.service';
+import {
+  passwordFingerprint,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from '../../services/token.service';
 import { hashPassword, sha256, verifyPassword } from '../../utils/hash.util';
 import { ApiError } from '../../utils/response.util';
 import { authRepo } from './auth.repo';
-import type { RegisterInput, LoginInput } from './auth.validators';
+import type { RegisterInput, LoginInput, RefreshInput } from './auth.validators';
 
 export const authService = {
   async register({ token, password }: RegisterInput) {
@@ -45,7 +50,20 @@ export const authService = {
     return {
       message: 'Connexion réussie',
       token: signAccessToken(user),
+      refreshToken: signRefreshToken(user),
       user: { id: user.id, email: user.email, role: user.role },
     };
+  },
+  async refresh({ refreshToken }: RefreshInput) {
+    const payload = verifyRefreshToken(refreshToken);
+    const user = await authRepo.findById(payload.sub);
+    // A password change (or a reset to pending) revokes every refresh token issued before it.
+    if (
+      !user ||
+      user.passwordHash === PENDING_ACTIVATION_HASH ||
+      passwordFingerprint(user.passwordHash) !== payload.ver
+    )
+      throw ApiError.unauthorized('Session expirée', 'INVALID_TOKEN');
+    return { token: signAccessToken(user), refreshToken: signRefreshToken(user) };
   },
 };

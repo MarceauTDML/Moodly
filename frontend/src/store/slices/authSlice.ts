@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Session } from '../../types/auth.types';
+import type { Session, SessionTokens } from '../../types/auth.types';
 interface AuthState {
   session: Session | null;
   bootstrapping: boolean;
@@ -13,6 +13,11 @@ const authSlice = createSlice({
       state.session = action.payload;
       state.bootstrapping = false;
     },
+    tokensRefreshed(state, action: PayloadAction<SessionTokens>) {
+      if (!state.session) return;
+      state.session.token = action.payload.token;
+      state.session.refreshToken = action.payload.refreshToken;
+    },
     signedOut(state) {
       state.session = null;
       state.bootstrapping = false;
@@ -22,5 +27,5 @@ const authSlice = createSlice({
     },
   },
 });
-export const { signedIn, signedOut, bootstrapFinished } = authSlice.actions;
+export const { signedIn, tokensRefreshed, signedOut, bootstrapFinished } = authSlice.actions;
 export default authSlice.reducer;

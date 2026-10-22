@@ -62,6 +62,7 @@ test('Le login accepte le contrat réel, refuse un rôle inconnu et retire les c
   const response = {
     message: 'ok',
     token: 'test-token',
+    refreshToken: 'test-refresh-token',
     user: { id: 'u1', email: 'test@example.org', role: 'MANAGER' },
     passwordHash: 'must-not-enter-store',
   };

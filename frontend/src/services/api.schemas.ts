@@ -24,9 +24,12 @@ const zone = z.object({
   max: z.number(),
 });
 const bucket = period.extend({ label: z.string(), from: z.string(), to: z.string() });
-export const loginSchema = z.object({
-  message: z.string(),
+export const tokensSchema = z.object({
   token: z.string().min(1),
+  refreshToken: z.string().min(1),
+});
+export const loginSchema = tokensSchema.extend({
+  message: z.string(),
   user: sessionUser,
 });
 export const profileSchema = sessionUser.extend({

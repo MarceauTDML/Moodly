@@ -25,6 +25,7 @@ export const authRepo = {
         invitationTokenExpiry: null,
       },
     }),
+  findById: (id: string) => prisma.user.findUnique({ where: { id } }),
   // Recherche par e-mail dans la base PostgreSQL
   async findByEmail(email: string) {
     return prisma.user.findUnique({

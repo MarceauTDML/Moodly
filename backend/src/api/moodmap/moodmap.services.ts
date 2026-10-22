@@ -4,7 +4,7 @@ import { anonymizeComments, hasEnoughResponses, maskBelowThreshold } from '../..
 import { buildStats, findTrendReference } from '../../services/mood-score.service';
 import type { HistoryPoint, MoodHighlight, MoodMapSummary, MoodTrend } from '../../types/mood.types';
 import type { TagStat } from '../../types/tag.types';
-import { addDays, dayRange, formatDay, formatTime, startOfIsoWeek, today } from '../../utils/date.util';
+import { addDays, dayRange, formatDay, formatTime, startOfIsoWeek, toDateKey, today } from '../../utils/date.util';
 import {
   averageScore,
   percentage,
@@ -36,7 +36,28 @@ const buildHighlight = (snapshot: MoodSnapshot): MoodHighlight =>
     ? { type: 'STRUGGLING', label: 'Collaborateurs en difficulté', count: snapshot.strugglingCount, total: snapshot.totalResponses }
     : { type: 'FLOURISHING', label: 'Collaborateurs épanouis', count: snapshot.flourishingCount, total: snapshot.totalResponses };
 
-const aggregateSnapshots = (snapshots: MoodSnapshot[]) => {
+// Les managers ne voient que des journées terminées : un agrégat du jour, recalculé
+// après chaque réponse, permettrait de déduire l'humeur du dernier votant par différence.
+const lastCompleteDay = () => addDays(today(), -1);
+
+// Une journée sous le seuil n'entre dans aucun agrégat : sinon, comparer deux périodes
+// qui ne diffèrent que de cette journée révélerait ses réponses.
+const visibleSnapshots = (snapshots: MoodSnapshot[]) =>
+  snapshots.filter((s) => hasEnoughResponses(s.totalResponses));
+
+type PeriodEntry = Awaited<ReturnType<typeof moodmapRepo.findEntries>>[number];
+
+const entriesOfVisibleDays = (entries: PeriodEntry[]) => {
+  const perDay = new Map<string, number>();
+  for (const e of entries) {
+    const key = toDateKey(e.submittedAt);
+    perDay.set(key, (perDay.get(key) ?? 0) + 1);
+  }
+  return entries.filter((e) => hasEnoughResponses(perDay.get(toDateKey(e.submittedAt)) ?? 0));
+};
+
+const aggregateSnapshots = (allSnapshots: MoodSnapshot[]) => {
+  const snapshots = visibleSnapshots(allSnapshots);
   const totalResponses = snapshots.reduce((sum, s) => sum + s.totalResponses, 0);
   const score = weightedAverage(snapshots.map((s) => ({ score: s.averageScore, weight: s.totalResponses })));
   const masked = maskBelowThreshold(score, totalResponses);
@@ -49,7 +70,7 @@ const monthLabel = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'num
 export const moodmapService = {
   async getSummary(team: Team): Promise<MoodMapSummary> {
     const [latest, teamSize] = await Promise.all([
-      moodmapRepo.findLatestSnapshot(team.id, MIN_RESPONSES),
+      moodmapRepo.findLatestSnapshot(team.id, MIN_RESPONSES, lastCompleteDay()),
       moodmapRepo.countVoters(team.id),
     ]);
 
@@ -100,7 +121,7 @@ export const moodmapService = {
   },
 
   async getHistory(team: Team, { days }: HistoryQuery) {
-    const end = today();
+    const end = lastCompleteDay();
     const start = addDays(end, -(days - 1));
     const snapshots = await moodmapRepo.findSnapshots(team.id, start, end);
     const byDay = new Map(snapshots.map((s) => [formatDay(s.date), s]));
@@ -114,7 +135,7 @@ export const moodmapService = {
         date: formatDay(day),
         score: visible ? round1(snap.averageScore) : null,
         status: visible ? snap.status : null,
-        totalResponses: snap?.totalResponses ?? 0,
+        totalResponses: visible ? snap.totalResponses : null,
       };
     });
 
@@ -130,16 +151,18 @@ export const moodmapService = {
   },
 
   async getTrends(team: Team, { days }: TrendsQuery) {
-    const end = today();
+    const end = lastCompleteDay();
     const from = addDays(end, -(days - 1));
     const previousFrom = addDays(from, -days);
 
-    const [entries, previousEntries, allTags, teamSize] = await Promise.all([
+    const [periodEntries, periodPreviousEntries, allTags, teamSize] = await Promise.all([
       moodmapRepo.findEntries(team.id, from, addDays(end, 1)),
       moodmapRepo.findEntries(team.id, previousFrom, from),
       moodmapRepo.findAllTags(),
       moodmapRepo.countVoters(team.id),
     ]);
+    const entries = entriesOfVisibleDays(periodEntries);
+    const previousEntries = entriesOfVisibleDays(periodPreviousEntries);
 
     const total = entries.length;
     const base = { team: teamRef(team), periodDays: days, from: formatDay(from), to: formatDay(end), minResponses: MIN_RESPONSES, totalResponses: total };
@@ -159,18 +182,19 @@ export const moodmapService = {
       percentage: percentage(stats.distribution[code], total),
     }));
 
+    // Un tag choisi par moins de MIN_RESPONSES personnes n'est pas affiché du tout.
     const tags: TagStat[] = allTags
       .map(({ code, label }) => {
         const tagged = entries.filter((e) => e.tags.some((t) => t.tag.code === code));
-        const tagScore = averageScore(tagged.map((e) => e.mood));
         return {
           code,
           label,
           count: tagged.length,
           percentage: percentage(tagged.length, total),
-          averageScore: maskBelowThreshold(tagScore, tagged.length),
+          averageScore: averageScore(tagged.map((e) => e.mood)),
         };
       })
+      .filter((tag) => hasEnoughResponses(tag.count))
       .sort((a, b) => b.count - a.count);
 
     return {
@@ -193,7 +217,7 @@ export const moodmapService = {
   },
 
   async getEvolution(team: Team, { granularity, periods }: EvolutionQuery) {
-    const end = today();
+    const end = lastCompleteDay();
     const buckets: { key: string; label: string; start: Date; end: Date }[] = [];
 
     if (granularity === 'day') {

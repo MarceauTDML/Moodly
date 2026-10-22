@@ -62,7 +62,7 @@ export function MoodMapScreen() {
               color={palette.text}
               muted={palette.muted}
             />
-            <LastUpdatedTag time={data.lastUpdatedTime} color={palette.muted} />
+            <LastUpdatedTag date={data.date} color={palette.muted} />
           </>
         )}
       </View>

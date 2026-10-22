@@ -55,7 +55,7 @@ export interface MoodHistory {
   to: string;
   zones: ChartZone[];
   period: PeriodStats;
-  points: (ChartPoint & { index: number; status: MoodStatus | null; totalResponses: number })[];
+  points: (ChartPoint & { index: number; status: MoodStatus | null; totalResponses: number | null })[];
 }
 export interface MoodTrends {
   team: Team;

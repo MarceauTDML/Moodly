@@ -49,5 +49,5 @@ export interface HistoryPoint {
   date: string;
   score: number | null;
   status: MoodStatus | null;
-  totalResponses: number;
+  totalResponses: number | null;
 }

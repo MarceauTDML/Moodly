@@ -13,7 +13,7 @@ import { AnonymityBanner } from '../../components/shared/AnonymityBanner';
 import { useProfileQuery } from '../../store/api/usersApi';
 import { useAuth } from '../../hooks/useAuth';
 import { colors } from '../../theme/colors';
-export function SettingsScreen() {
+export function SettingsScreen({ onBack }: { onBack?: () => void }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { currentData: profile } = useProfileQuery();
   const { session, signOut } = useAuth();
@@ -31,7 +31,15 @@ export function SettingsScreen() {
   return (
     <ScreenContainer>
       <StatusBar barStyle="dark-content" />
-      <AppHeader title="Paramètres" subtitle="Votre espace manager" />
+      <AppHeader
+        title="Paramètres"
+        subtitle={
+          session?.user.role === 'COLLABORATEUR'
+            ? 'Votre espace collaborateur'
+            : 'Votre espace manager'
+        }
+        onBack={onBack}
+      />
       <View style={{ padding: 24, gap: 22 }}>
         <Card>
           <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
@@ -47,7 +55,11 @@ export function SettingsScreen() {
               </Text>
               <Text style={{ color: colors.primary, fontSize: 11 }}>
                 {profile?.company?.name} ·{' '}
-                {session?.user.role === 'ADMIN' ? 'Administrateur' : 'Manager'}
+                {session?.user.role === 'ADMIN'
+                  ? 'Administrateur'
+                  : session?.user.role === 'COLLABORATEUR'
+                    ? 'Collaborateur'
+                    : 'Manager'}
               </Text>
             </View>
           </View>

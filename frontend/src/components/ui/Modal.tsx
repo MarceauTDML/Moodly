@@ -14,6 +14,8 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  // Démonter la fenêtre avant qu'une navigation ne fige l'écran qui l'affichait.
+  if (!visible) return null;
   return (
     <NativeModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>

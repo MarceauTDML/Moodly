@@ -103,7 +103,10 @@ async function main() {
     const team = await prisma.team.create({ data: { name: def.name, companyId: company.id } });
     await prisma.teamMember.create({ data: { teamId: team.id, userId: def.manager.id, isLead: true } });
 
-    const members = [];
+    const members: {
+      user: Awaited<ReturnType<typeof createUser>>;
+      isDemo: boolean;
+    }[] = [];
     for (let i = 0; i < def.size; i++) {
       const isDemo = def.name === 'Équipe Produit' && i === 0;
       const first = isDemo ? 'Léa' : FIRST_NAMES[nameIndex % FIRST_NAMES.length];

@@ -1,4 +1,4 @@
-# Front manager — Moodly
+# Front manager et collaborateur — Moodly
 
 React Native + TypeScript, avec Expo. Implementation de la vision manager de Marie,
 dans l'arborescence proposee par Marceau. Les accents sont utilises dans l'interface.
@@ -38,7 +38,7 @@ Ne pas lancer `npm ci` a la racine du depot : les deux projets ont leur propre
 ## Backend
 
 Le backend doit tourner separement. Lire le README a la racine.
-Le front fonctionne avec les routes existantes du commit `9e98ca9` de `main`.
+Le front utilise le backend de la branche Rajeeva et les routes /api/v1.
 Aucune route ne contient l'URL de votre infrastructure : seul `api.config.ts`
 lit la configuration locale. L'absence d'URL produit un message, sans connexion
 vers un serveur de demonstration.
@@ -87,8 +87,8 @@ contenait pas de maquette detaillee de ces ecrans secondaires.
 - Le serveur produit les snapshots de facon differee : un rafraichissement
   n'implique pas un recalcul en temps reel.
 - Le filtre multi-equipes apparait seulement si le serveur en autorise plusieurs.
-- L'ecran collaborateur reste a integrer avec Myriam. Un compte collaborateur
-  recoit un message d'acces a son espace, sans afficher le dashboard manager.
+- Le role COLLABORATEUR ouvre EmployeeStack et la saisie quotidienne. Le serveur
+  fournit les equipes autorisees et empeche une deuxieme reponse le meme jour.
 - Les preferences de notification sont enregistrees ; le front n'inscrit pas
   automatiquement l'appareil aux notifications push.
 - Un code de reinitialisation peut etre saisi, et le lien natif utilise
@@ -104,7 +104,6 @@ npx expo install --check
 ```
 
 Les tests du backend se lancent dans `backend` avec `npm test -- --runInBand`.
-Les controles realises et leurs limites figurent dans `../VALIDATION_MANAGER.md`.
+Le contenu et le lancement de cette archive sont expliques dans `../README.md`.
 
-La configuration de securite et les alertes de dependances sont expliquees dans
-`../SECURITE_MANAGER.md`.
+La configuration de securite est expliquee dans le README a la racine.

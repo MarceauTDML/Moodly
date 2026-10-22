@@ -9,7 +9,12 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;
   Manager: NavigatorScreenParams<ManagerTabsParamList> | undefined;
+  Employee: NavigatorScreenParams<EmployeeStackParamList> | undefined;
   TeamTrends: undefined;
   Profile: undefined;
   Notifications: undefined;
+};
+export type EmployeeStackParamList = {
+  DailyCheckin: undefined;
+  EmployeeSettings: undefined;
 };

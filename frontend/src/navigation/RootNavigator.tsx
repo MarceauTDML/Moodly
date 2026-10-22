@@ -2,6 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './navigation.types';
 import { ManagerTabs } from './ManagerTabs';
+import { EmployeeStack } from './EmployeeStack';
+import { accessSpace } from '../utils/access.util';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/auth/ResetPasswordScreen';
@@ -12,6 +14,11 @@ import { RoleGuard } from '../components/shared/RoleGuard';
 import { LoadingOverlay } from '../components/shared/LoadingOverlay';
 import { useAuth } from '../hooks/useAuth';
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const EmployeeHome = () => (
+  <RoleGuard roles={['COLLABORATEUR']}>
+    <EmployeeStack />
+  </RoleGuard>
+);
 const ManagerHome = () => (
   <RoleGuard>
     <ManagerTabs />
@@ -24,6 +31,7 @@ const Trends = (props: React.ComponentProps<typeof TeamTrendsScreen>) => (
 );
 export function RootNavigator() {
   const { session, bootstrapping } = useAuth();
+  const space = accessSpace(session?.user.role);
   if (bootstrapping) return <LoadingOverlay />;
   return (
     <NavigationContainer
@@ -36,12 +44,18 @@ export function RootNavigator() {
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F3EFF9' } }}
       >
         {session ? (
-          <>
-            <Stack.Screen name="Manager" component={ManagerHome} />
-            <Stack.Screen name="TeamTrends" component={Trends} />
+          <Stack.Group navigationKey={`${session.user.id}:${space}`}>
+            {space === 'employee' ? (
+              <Stack.Screen name="Employee" component={EmployeeHome} />
+            ) : (
+              <>
+                <Stack.Screen name="Manager" component={ManagerHome} />
+                <Stack.Screen name="TeamTrends" component={Trends} />
+              </>
+            )}
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Notifications" component={NotificationSettingsScreen} />
-          </>
+          </Stack.Group>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

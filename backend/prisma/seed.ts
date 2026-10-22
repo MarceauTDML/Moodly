@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 
 const SEED_PASSWORD = process.env.SEED_PASSWORD ?? 'MoodMap2026!';
 const DAYS = 30;
+const seedDemoMoods = process.env.SEED_DEMO_MOODS === 'true';
 
 let state = 20261015;
 const rand = () => {
@@ -29,7 +30,9 @@ const LEVELS: [MoodLevel, number][] = [
 
 const moodAround = (target: number): MoodLevel => {
   const value = target + gaussian() * 14;
-  return LEVELS.reduce((best, cur) => (Math.abs(cur[1] - value) < Math.abs(best[1] - value) ? cur : best))[0];
+  return LEVELS.reduce((best, cur) =>
+    Math.abs(cur[1] - value) < Math.abs(best[1] - value) ? cur : best,
+  )[0];
 };
 
 const TAGS_BY_MOOD: Record<MoodLevel, TagCategory[]> = {
@@ -40,14 +43,92 @@ const TAGS_BY_MOOD: Record<MoodLevel, TagCategory[]> = {
 };
 
 const COMMENTS: Record<MoodLevel, string[]> = {
-  EPANOUI: ['Super rétro d’équipe aujourd’hui !', 'Mise en prod réussie, bravo à tous.', 'Belle reconnaissance du client.'],
+  EPANOUI: [
+    'Super rétro d’équipe aujourd’hui !',
+    'Mise en prod réussie, bravo à tous.',
+    'Belle reconnaissance du client.',
+  ],
   BIEN: ['Journée productive.', 'Bonne réunion de lancement.', 'RAS, tout roule.'],
-  MOYEN: ['Beaucoup de réunions, peu de temps pour avancer.', 'Le VPN a encore coupé plusieurs fois.', 'Priorités un peu floues.'],
-  STRESSE: ['Trop de sujets urgents en parallèle.', 'Deadline intenable cette semaine.', 'Besoin de plus de soutien sur le projet.'],
+  MOYEN: [
+    'Beaucoup de réunions, peu de temps pour avancer.',
+    'Le VPN a encore coupé plusieurs fois.',
+    'Priorités un peu floues.',
+  ],
+  STRESSE: [
+    'Trop de sujets urgents en parallèle.',
+    'Deadline intenable cette semaine.',
+    'Besoin de plus de soutien sur le projet.',
+  ],
 };
 
-const FIRST_NAMES = ['Léa', 'Hugo', 'Chloé', 'Louis', 'Emma', 'Gabriel', 'Inès', 'Raphaël', 'Jade', 'Arthur', 'Manon', 'Jules', 'Sarah', 'Adam', 'Lina', 'Nathan', 'Zoé', 'Tom', 'Alice', 'Noah', 'Camille', 'Ethan', 'Louise', 'Paul', 'Nina', 'Lucas', 'Eva', 'Sacha', 'Mila', 'Théo', 'Rose', 'Maël'];
-const LAST_NAMES = ['Dupont', 'Martin', 'Bernard', 'Thomas', 'Petit', 'Robert', 'Richard', 'Durand', 'Dubois', 'Moreau', 'Laurent', 'Simon', 'Michel', 'Lefebvre', 'Leroy', 'Roux', 'David', 'Bertrand', 'Morel', 'Fournier', 'Girard', 'Bonnet', 'Dupuis', 'Lambert', 'Fontaine', 'Rousseau', 'Vincent', 'Muller', 'Lefevre', 'Faure', 'Andre', 'Mercier'];
+const FIRST_NAMES = [
+  'Léa',
+  'Hugo',
+  'Chloé',
+  'Louis',
+  'Emma',
+  'Gabriel',
+  'Inès',
+  'Raphaël',
+  'Jade',
+  'Arthur',
+  'Manon',
+  'Jules',
+  'Sarah',
+  'Adam',
+  'Lina',
+  'Nathan',
+  'Zoé',
+  'Tom',
+  'Alice',
+  'Noah',
+  'Camille',
+  'Ethan',
+  'Louise',
+  'Paul',
+  'Nina',
+  'Lucas',
+  'Eva',
+  'Sacha',
+  'Mila',
+  'Théo',
+  'Rose',
+  'Maël',
+];
+const LAST_NAMES = [
+  'Dupont',
+  'Martin',
+  'Bernard',
+  'Thomas',
+  'Petit',
+  'Robert',
+  'Richard',
+  'Durand',
+  'Dubois',
+  'Moreau',
+  'Laurent',
+  'Simon',
+  'Michel',
+  'Lefebvre',
+  'Leroy',
+  'Roux',
+  'David',
+  'Bertrand',
+  'Morel',
+  'Fournier',
+  'Girard',
+  'Bonnet',
+  'Dupuis',
+  'Lambert',
+  'Fontaine',
+  'Rousseau',
+  'Vincent',
+  'Muller',
+  'Lefevre',
+  'Faure',
+  'Andre',
+  'Mercier',
+];
 
 const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -71,7 +152,9 @@ async function main() {
   const tagId = new Map(tags.map((t) => [t.code, t.id]));
 
   console.log('🏢 Entreprise, équipes et utilisateurs…');
-  const company = await prisma.company.create({ data: { name: 'Entreprise Démo', domain: 'entreprise.fr' } });
+  const company = await prisma.company.create({
+    data: { name: 'Entreprise Démo', domain: 'entreprise.fr' },
+  });
   const passwordHash = await hashPassword(SEED_PASSWORD);
 
   const createUser = (firstName: string, lastName: string, role: Role, email?: string) =>
@@ -87,12 +170,32 @@ async function main() {
     });
 
   await createUser('Admin', 'MoodMap', Role.ADMIN, 'admin@entreprise.fr');
-  const managerProduit = await createUser('Camille', 'Martin', Role.MANAGER, 'manager@entreprise.fr');
-  const managerSupport = await createUser('Julien', 'Moreau', Role.MANAGER, 'manager.support@entreprise.fr');
+  const managerProduit = await createUser(
+    'Camille',
+    'Martin',
+    Role.MANAGER,
+    'manager@entreprise.fr',
+  );
+  const managerSupport = await createUser(
+    'Julien',
+    'Moreau',
+    Role.MANAGER,
+    'manager.support@entreprise.fr',
+  );
 
   const teams = [
-    { name: 'Équipe Produit', manager: managerProduit, size: 24, target: (p: number) => 50 + p * 46 },
-    { name: 'Équipe Support', manager: managerSupport, size: 10, target: (p: number) => 68 - p * 38 },
+    {
+      name: 'Équipe Produit',
+      manager: managerProduit,
+      size: 24,
+      target: (p: number) => 50 + p * 46,
+    },
+    {
+      name: 'Équipe Support',
+      manager: managerSupport,
+      size: 10,
+      target: (p: number) => 68 - p * 38,
+    },
   ];
 
   const end = today();
@@ -100,23 +203,50 @@ async function main() {
   let nameIndex = 0;
 
   for (const def of teams) {
-    const team = await prisma.team.create({ data: { name: def.name, companyId: company.id } });
-    await prisma.teamMember.create({ data: { teamId: team.id, userId: def.manager.id, isLead: true } });
+    const team = await prisma.team.create({
+      data: { name: def.name, companyId: company.id },
+    });
+    await prisma.teamMember.create({
+      data: { teamId: team.id, userId: def.manager.id, isLead: true },
+    });
 
-    const members = [];
+    const members: {
+      user: Awaited<ReturnType<typeof createUser>>;
+      isDemo: boolean;
+    }[] = [];
     for (let i = 0; i < def.size; i++) {
       const isDemo = def.name === 'Équipe Produit' && i === 0;
       const first = isDemo ? 'Léa' : FIRST_NAMES[nameIndex % FIRST_NAMES.length];
       const last = isDemo ? 'Dupont' : LAST_NAMES[(nameIndex * 7) % LAST_NAMES.length];
       nameIndex++;
-      const user = await createUser(first, last, Role.COLLABORATEUR, isDemo ? 'collaborateur@entreprise.fr' : `${slug(first)}.${slug(last)}.${nameIndex}@entreprise.fr`);
-      await prisma.teamMember.create({ data: { teamId: team.id, userId: user.id } });
+      const user = await createUser(
+        first,
+        last,
+        Role.COLLABORATEUR,
+        isDemo
+          ? 'collaborateur@entreprise.fr'
+          : `${slug(first)}.${slug(last)}.${nameIndex}@entreprise.fr`,
+      );
+      await prisma.teamMember.create({
+        data: { teamId: team.id, userId: user.id },
+      });
       members.push({ user, isDemo });
+    }
+
+    if (!seedDemoMoods) {
+      console.log(`   → ${def.name} : aucun mood de démonstration ajouté.`);
+      continue;
     }
 
     console.log(`📈 ${def.name} : ${DAYS} jours d'historique…`);
     const checkins: { userId: string; date: Date }[] = [];
-    const entries: { id: string; teamId: string; mood: MoodLevel; comment: string | null; submittedAt: Date }[] = [];
+    const entries: {
+      id: string;
+      teamId: string;
+      mood: MoodLevel;
+      comment: string | null;
+      submittedAt: Date;
+    }[] = [];
     const entryTags: { moodEntryId: string; tagId: string }[] = [];
 
     days.forEach((day, index) => {
@@ -128,7 +258,13 @@ async function main() {
         const mood = moodAround(def.target(progress));
         const id = randomUUID();
         checkins.push({ userId: user.id, date: day });
-        entries.push({ id, teamId: team.id, mood, comment: rand() < 0.15 ? pick(COMMENTS[mood]) : null, submittedAt: day });
+        entries.push({
+          id,
+          teamId: team.id,
+          mood,
+          comment: rand() < 0.15 ? pick(COMMENTS[mood]) : null,
+          submittedAt: day,
+        });
 
         const tagCount = Math.floor(rand() * 3);
         const chosen = new Set<TagCategory>();
@@ -137,13 +273,19 @@ async function main() {
       }
     });
 
-    await prisma.userDailyCheckin.createMany({ data: checkins.map((c) => ({ ...c, createdAt: c.date })) });
+    await prisma.userDailyCheckin.createMany({
+      data: checkins.map((c) => ({ ...c, createdAt: c.date })),
+    });
     await prisma.moodEntry.createMany({ data: entries });
     await prisma.moodEntryTag.createMany({ data: entryTags });
 
     for (const day of days) await upsertSnapshot(team.id, day);
-    const last = await prisma.moodSnapshot.findUnique({ where: { teamId_date: { teamId: team.id, date: end } } });
-    console.log(`   → ${entries.length} votes, score du jour ${last?.averageScore}/100 (${last?.status})`);
+    const last = await prisma.moodSnapshot.findUnique({
+      where: { teamId_date: { teamId: team.id, date: end } },
+    });
+    console.log(
+      `   → ${entries.length} votes, score du jour ${last?.averageScore}/100 (${last?.status})`,
+    );
   }
 
   console.log(`✅ Seed terminé (${formatDay(addDays(end, -(DAYS - 1)))} → ${formatDay(end)}).`);
@@ -151,7 +293,9 @@ async function main() {
   console.log('   - admin@entreprise.fr           (ADMIN)');
   console.log('   - manager@entreprise.fr         (MANAGER, Équipe Produit)');
   console.log('   - manager.support@entreprise.fr (MANAGER, Équipe Support)');
-  console.log('   - collaborateur@entreprise.fr   (COLLABORATEUR, Équipe Produit, pas encore voté aujourd’hui)');
+  console.log(
+    '   - collaborateur@entreprise.fr   (COLLABORATEUR, Équipe Produit, pas encore voté aujourd’hui)',
+  );
 }
 
 main()

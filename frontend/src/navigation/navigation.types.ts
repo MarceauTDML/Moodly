@@ -1,0 +1,22 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+export type ManagerTabsParamList = {
+  MoodMap: undefined;
+  Evolution: undefined;
+  Settings: undefined;
+};
+export type RootStackParamList = {
+  Welcome: undefined;
+  Login: { portal?: 'employee' | 'manager' } | undefined;
+  ActivateAccount: { token?: string } | undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token?: string } | undefined;
+  Manager: NavigatorScreenParams<ManagerTabsParamList> | undefined;
+  Employee: NavigatorScreenParams<EmployeeStackParamList> | undefined;
+  TeamTrends: undefined;
+  Profile: undefined;
+  Notifications: undefined;
+};
+export type EmployeeStackParamList = {
+  DailyCheckin: undefined;
+  EmployeeSettings: undefined;
+};

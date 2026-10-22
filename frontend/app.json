@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Mood map",
+    "slug": "moodly-manager",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "moodmap",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.moodly.manager",
+      "permissions": []
+    },
+    "plugins": ["expo-secure-store", "expo-font"],
+    "web": {
+      "bundler": "metro",
+      "name": "Mood map"
+    },
+    "experiments": {
+      "baseUrl": ""
+    }
+  }
+}

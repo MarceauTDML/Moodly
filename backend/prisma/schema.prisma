@@ -74,6 +74,9 @@ model User {
   companyId        String
   resetToken       String?
   resetTokenExpiry DateTime?
+  invitationToken       String?
+  invitationTokenExpiry DateTime?
+  invitationSentAt      DateTime?
 
   pushToken                 String?
   dailyReminderEnabled      Boolean @default(true)

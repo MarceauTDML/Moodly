@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+web-build/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+*.keystore
+*.jks
+*.p8
+*.p12
+*.pem
+.DS_Store

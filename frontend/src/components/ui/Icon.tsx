@@ -1,5 +1,13 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 export type IconName =
+  | 'users'
+  | 'mail'
+  | 'calendar'
+  | 'clock'
+  | 'check'
+  | 'plus'
+  | 'key'
+  | 'search'
   | 'smile'
   | 'chart'
   | 'settings'
@@ -23,6 +31,15 @@ export function Icon({
   size?: number;
 }) {
   const paths: Partial<Record<IconName, string>> = {
+    users:
+      'M3 21V19A6 6 0 0 1 15 19V21 M13 3A4 4 0 0 1 13 11 M17 13A6 6 0 0 1 21 19V21 M12 7A4 4 0 1 1 4 7A4 4 0 0 1 12 7',
+    mail: 'M3 5H21V19H3Z M3 6L12 13L21 6',
+    calendar: 'M3 5H21V21H3Z M7 2V8 M17 2V8 M3 11H21 M7 15H8 M12 15H13 M7 18H8 M12 18H13',
+    clock: 'M12 8V12L15 14 M22 12A10 10 0 1 1 2 12A10 10 0 0 1 22 12',
+    check: 'M8 12L11 15L16 9 M22 12A10 10 0 1 1 2 12A10 10 0 0 1 22 12',
+    plus: 'M12 5V19 M5 12H19',
+    key: 'M14 3A6 6 0 1 1 14 15L7 22H2V17L8 11 M16 6L17 6',
+    search: 'M21 21L16 16 M18 10A8 8 0 1 1 2 10A8 8 0 0 1 18 10',
     chart: 'M3 20V13 M8 20V10 M13 20V14 M18 20V6 M3 8L8 4L13 8L21 2',
     menu: 'M5 6H19 M5 12H19 M5 18H19',
     chevron: 'M9 5L16 12L9 19',

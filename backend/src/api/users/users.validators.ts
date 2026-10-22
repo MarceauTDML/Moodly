@@ -9,7 +9,7 @@ export const emailSchema = z
   .toLowerCase()
   .pipe(z.email({ error: 'E-mail invalide' }));
 
-// Mêmes règles que l'activation du compte (POST /auth/register) : recommandations ANSSI / CNIL
+// Mêmes règles que le formulaire d’activation du compte.
 export const passwordSchema = z
   .string({ error: 'Le mot de passe est requis' })
   .min(12, { error: 'Le mot de passe doit faire au moins 12 caractères' })
@@ -17,7 +17,9 @@ export const passwordSchema = z
   .regex(/[A-Z]/, { error: 'Il faut au moins une lettre majuscule' })
   .regex(/[a-z]/, { error: 'Il faut au moins une lettre minuscule' })
   .regex(/[0-9]/, { error: 'Il faut au moins un chiffre' })
-  .regex(/[^a-zA-Z0-9]/, { error: 'Il faut au moins un symbole (!, @, #, etc.)' });
+  .regex(/[^a-zA-Z0-9]/, {
+    error: 'Il faut au moins un symbole (!, @, #, etc.)',
+  });
 
 export const userIdParamsSchema = z.object({
   userId: z.uuid({ error: 'Identifiant invalide' }),
@@ -25,10 +27,15 @@ export const userIdParamsSchema = z.object({
 
 export const updateMeSchema = z
   .object({ firstName: name.optional(), lastName: name.optional() })
-  .refine((v) => Object.keys(v).length > 0, { error: 'Aucune donnée à mettre à jour' });
+  .refine((v) => Object.keys(v).length > 0, {
+    error: 'Aucune donnée à mettre à jour',
+  });
 
 export const changePasswordSchema = z
-  .object({ currentPassword: z.string().min(1).max(128), newPassword: passwordSchema })
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: passwordSchema,
+  })
   .refine((v) => v.currentPassword !== v.newPassword, {
     error: "Le nouveau mot de passe doit être différent de l'actuel",
     path: ['newPassword'],
@@ -39,7 +46,9 @@ export const notificationSettingsSchema = z
     dailyReminderEnabled: z.boolean().optional(),
     emailNotificationsEnabled: z.boolean().optional(),
   })
-  .refine((v) => Object.keys(v).length > 0, { error: 'Aucune donnée à mettre à jour' });
+  .refine((v) => Object.keys(v).length > 0, {
+    error: 'Aucune donnée à mettre à jour',
+  });
 
 export const pushTokenSchema = z.object({
   pushToken: z
@@ -63,9 +72,30 @@ export const createUserSchema = z.object({
 });
 
 export const updateUserSchema = z
-  .object({ firstName: name.optional(), lastName: name.optional(), role: z.enum(Role).optional() })
-  .refine((v) => Object.keys(v).length > 0, { error: 'Aucune donnée à mettre à jour' });
+  .object({
+    firstName: name.optional(),
+    lastName: name.optional(),
+    role: z.enum(Role).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    error: 'Aucune donnée à mettre à jour',
+  });
 
+export const collaboratorSchema = z.object({
+  email: emailSchema,
+  firstName: name,
+  lastName: name,
+  teamId: z.uuid(),
+  role: z.literal('COLLABORATEUR').default('COLLABORATEUR'),
+});
+export const updateCollaboratorSchema = z.object({
+  firstName: name,
+  lastName: name,
+  email: emailSchema,
+  teamId: z.uuid(),
+});
+export type CollaboratorInput = z.infer<typeof collaboratorSchema>;
+export type UpdateCollaboratorInput = z.infer<typeof updateCollaboratorSchema>;
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type NotificationSettingsInput = z.infer<typeof notificationSettingsSchema>;

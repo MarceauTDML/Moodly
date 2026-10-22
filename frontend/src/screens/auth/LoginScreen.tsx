@@ -13,7 +13,11 @@ import { errorMessage } from '../../services/api.client';
 import { isEmail } from '../../utils/validators.util';
 import { typography } from '../../theme/typography';
 import { colors } from '../../theme/colors';
-export function LoginScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'Login'>) {
+export function LoginScreen({
+  navigation,
+  route,
+}: NativeStackScreenProps<RootStackParamList, 'Login'>) {
+  const portal = route.params?.portal ?? 'employee';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +32,7 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<RootStackPara
     setBusy(true);
     setError(null);
     try {
-      await signIn({ email: email.trim().toLowerCase(), password });
+      await signIn({ email: email.trim().toLowerCase(), password, portal });
       setPassword('');
     } catch (e) {
       setError(errorMessage(e));
@@ -46,6 +50,11 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<RootStackPara
           </View>
           <Text style={{ fontSize: 23 }}>Mood Map</Text>
         </View>
+        <TextLink
+          title="‹ Changer d’espace"
+          onPress={() => navigation.navigate('Welcome')}
+          style={{ marginTop: -24, marginBottom: -24 }}
+        />
         <View style={{ gap: 12 }}>
           <Text accessibilityRole="header" style={typography.title}>
             Bienvenue
@@ -57,7 +66,9 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<RootStackPara
         <View style={{ gap: 24 }}>
           <View style={{ gap: 5 }}>
             <Text style={[typography.heading, { fontSize: 20 }]}>Connectez-vous</Text>
-            <Text style={{ color: colors.muted, fontSize: 13 }}>Managers et collaborateurs</Text>
+            <Text style={{ color: colors.muted, fontSize: 13 }}>
+              {portal === 'manager' ? 'Espace manager' : 'Espace collaborateur'}
+            </Text>
           </View>
           <Input
             label="E-mail professionnel"
@@ -95,6 +106,12 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<RootStackPara
             </Text>
           )}
           <Button title="Se connecter" onPress={() => void submit()} loading={busy} />
+          {portal === 'employee' && (
+            <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 20 }}>
+              Première connexion ? Ouvrez l’invitation de votre manager pour créer votre mot de
+              passe.
+            </Text>
+          )}
         </View>
       </View>
     </ScreenContainer>

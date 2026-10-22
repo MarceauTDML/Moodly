@@ -1,104 +1,51 @@
-import argon2 from "argon2";
-import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
-import { authRepo } from "./auth.repo";
-import { RegisterInput, LoginInput, InviteCollaboratorInput } from "./auth.validators";
-
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "cle_secrete_access_pour_le_dev_moodly_123456";
-const prisma = new PrismaClient();
+import { PENDING_ACTIVATION_HASH } from '../../config/auth.config';
+import { signAccessToken } from '../../services/token.service';
+import { hashPassword, sha256, verifyPassword } from '../../utils/hash.util';
+import { ApiError } from '../../utils/response.util';
+import { authRepo } from './auth.repo';
+import type { RegisterInput, LoginInput } from './auth.validators';
 
 export const authService = {
-  // Le Manager souhaite inviter un collaborateur
-
-  async addCollaborator(managerId: string, input: InviteCollaboratorInput) {
-    const existing = await authRepo.findByEmail(input.email);
-    if (existing) {
-      throw new Error("Cet e-mail est déjà enregistré dans l'entreprise");
-    }
-
-    // Checker de quelle entreprise vient le manager (companyId)
-    const manager = await authRepo.findByEmail(managerId) || await prisma.user.findUnique({ where: { id: managerId } });
-    if (!manager) {
-      throw new Error("Manager introuvable");
-    }
-
-    // Crée le collaborateur lié à la même entreprise
-    const collaboratorInput = input as InviteCollaboratorInput & {
-      firstName?: string;
-      lastName?: string;
-    };
-
-    const newCollaborator = await authRepo.createUser({
-      email: input.email,
-      passwordHash: "EN_ATTENTE_ACTIVATION", // Marqueur temporaire
-      firstName: collaboratorInput.firstName || "Collaborateur",
-      lastName: collaboratorInput.lastName || "Moodly",
-      companyId: manager.companyId,
-      role: "COLLABORATEUR",
-    });
-
+  async register({ token, password }: RegisterInput) {
+    const tokenHash = sha256(token);
+    const user = await authRepo.findInvitation(tokenHash);
+    if (!user)
+      throw ApiError.badRequest(
+        'Ce lien est invalide ou expiré. Demandez une nouvelle invitation à votre manager.',
+        'INVALID_INVITATION',
+      );
+    // Conditional update consumes the invitation once, including concurrent requests.
+    const result = await authRepo.activate(user.id, tokenHash, await hashPassword(password));
+    if (result.count !== 1)
+      throw ApiError.badRequest('Ce lien est invalide ou expiré.', 'INVALID_INVITATION');
     return {
-      message: "Collaborateur ajouté avec succès",
-      email: newCollaborator.email,
+      message: 'Votre compte est activé. Vous pouvez vous connecter.',
+      email: user.email,
+      role: user.role,
     };
   },
-
-  // Le collaborateur active son compte en définissant son mot de passe
-
-  async register(input: RegisterInput) {
-    const user = await authRepo.findByEmail(input.email);
-
-    // Si le mail n'a jamais été pré-enregistré par un manager
-    if (!user) {
-      throw new Error("Votre adresse e-mail n'est pas autorisée. Demandez à votre manager de vous ajouter.");
-    }
-
-    // Vérification de l'activation :
-    // Le compte est considéré comme déjà activé s'il a un mot de passe différent du marqueur temporaire
-    if (user.passwordHash && user.passwordHash !== "EN_ATTENTE_ACTIVATION") {
-      throw new Error("Ce compte a déjà été activé. Veuillez vous connecter.");
-    }
-
-    // Hachage du vrai mot de passe et mise à jour
-    const hash = await argon2.hash(input.password);
-    const updatedUser = await authRepo.updateUser(input.email, {
-      passwordHash: hash,
-    });
-
-    return {
-      message: "Compte activé avec succès !",
-      email: updatedUser?.email,
-      role: updatedUser?.role,
-    };
-  },
-
-  // Connexion (renvoie automatiquement le rôle connu en base)
-
   async login(input: LoginInput) {
     const user = await authRepo.findByEmail(input.email);
-
-    if (!user || !user.passwordHash) {
-      throw new Error("Identifiants incorrects");
+    if (
+      !user ||
+      user.passwordHash === PENDING_ACTIVATION_HASH ||
+      !(await verifyPassword(input.password, user.passwordHash))
+    ) {
+      throw ApiError.unauthorized('Identifiants incorrects', 'INVALID_CREDENTIALS');
     }
-
-    const isPasswordValid = await argon2.verify(user.passwordHash, input.password);
-      if (!isPasswordValid) {
-      throw new Error("Identifiants incorrects");
+    const portal = user.role === 'COLLABORATEUR' ? 'employee' : 'manager';
+    if (input.portal && input.portal !== portal) {
+      throw ApiError.forbidden(
+        portal === 'employee'
+          ? 'Ce compte appartient à l’espace collaborateur.'
+          : 'Ce compte appartient à l’espace manager.',
+        'WRONG_PORTAL',
+      );
     }
-
-    const token = jwt.sign(
-      { sub: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "8h" }
-    );
-
     return {
-      token,
-        user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
+      message: 'Connexion réussie',
+      token: signAccessToken(user),
+      user: { id: user.id, email: user.email, role: user.role },
     };
   },
 };

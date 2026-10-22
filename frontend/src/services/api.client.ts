@@ -60,8 +60,22 @@ export async function requestApi<T>(path: string, options: RequestOptions<T> = {
           ? error.code
           : undefined;
       // Ne pas afficher des erreurs serveur brutes (requêtes SQL, détails internes...).
+      const knownMessages: Record<string, string> = {
+        WRONG_PORTAL:
+          'Ce compte appartient à l’autre espace. Revenez à l’accueil pour changer d’espace.',
+        INVALID_INVITATION:
+          'Ce lien est invalide, expiré ou déjà utilisé. Demandez une nouvelle invitation à votre manager.',
+        INVALID_EMAIL_DOMAIN:
+          'Utilisez une adresse professionnelle appartenant au domaine de votre entreprise.',
+        ALREADY_EXISTS: 'Cette adresse e-mail est déjà enregistrée.',
+        ALREADY_ACTIVE: 'Ce compte est déjà actif.',
+        TEAM_NOT_FOUND: 'Cette équipe n’est pas accessible. Choisissez une de vos équipes.',
+        MULTIPLE_TEAMS: 'Ce compte appartient à plusieurs équipes. Contactez votre administrateur.',
+        ACTIVE_EMAIL_CHANGE: 'L’adresse d’un compte actif ne peut pas être modifiée ici.',
+      };
       const message =
-        response.status === 401
+        (code && knownMessages[code]) ||
+        (response.status === 401
           ? 'Identifiants incorrects ou session expirée.'
           : response.status === 403
             ? 'Vous ne pouvez pas accéder à cette équipe.'
@@ -71,7 +85,7 @@ export async function requestApi<T>(path: string, options: RequestOptions<T> = {
                 ? 'Trop de demandes. Réessayez dans quelques instants.'
                 : response.status >= 500
                   ? 'Le serveur est indisponible. Réessayez plus tard.'
-                  : 'La demande a été refusée. Vérifiez les informations saisies.';
+                  : 'La demande a été refusée. Vérifiez les informations saisies.');
       throw new ApiRequestError({ status: response.status, message, code });
     }
     const data =

@@ -12,6 +12,9 @@ export const authApi = baseApi.injectEndpoints({
         schema: loginSchema,
       }),
     }),
+    activateAccount: build.mutation<{ message: string }, { token: string; password: string }>({
+      query: (body) => ({ url: '/auth/activate', method: 'POST', body, public: true }),
+    }),
     forgotPassword: build.mutation<{ message: string }, { email: string }>({
       query: (body) => ({ url: '/password/forgot', method: 'POST', body, public: true }),
     }),
@@ -20,4 +23,9 @@ export const authApi = baseApi.injectEndpoints({
     }),
   }),
 });
-export const { useLoginMutation, useForgotPasswordMutation, useResetPasswordMutation } = authApi;
+export const {
+  useLoginMutation,
+  useActivateAccountMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} = authApi;

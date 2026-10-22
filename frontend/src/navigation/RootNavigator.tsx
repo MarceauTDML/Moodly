@@ -4,6 +4,8 @@ import type { RootStackParamList } from './navigation.types';
 import { ManagerTabs } from './ManagerTabs';
 import { EmployeeStack } from './EmployeeStack';
 import { accessSpace } from '../utils/access.util';
+import { WelcomeScreen } from '../screens/auth/WelcomeScreen';
+import { ActivateAccountScreen } from '../screens/auth/ActivateAccountScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/auth/ResetPasswordScreen';
@@ -37,7 +39,14 @@ export function RootNavigator() {
     <NavigationContainer
       linking={{
         prefixes: ['moodmap://'],
-        config: { screens: { ResetPassword: 'reset-password' } },
+        config: {
+          screens: {
+            Welcome: '',
+            Login: 'login',
+            ActivateAccount: 'activate-account',
+            ResetPassword: 'reset-password',
+          },
+        },
       }}
     >
       <Stack.Navigator
@@ -58,6 +67,8 @@ export function RootNavigator() {
           </Stack.Group>
         ) : (
           <>
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="ActivateAccount" component={ActivateAccountScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />

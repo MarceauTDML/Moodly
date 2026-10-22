@@ -1,3 +1,4 @@
+import { PENDING_ACTIVATION_HASH } from '../config/auth.config';
 import { prisma } from '../config/prisma.config';
 import { emailService } from '../services/email.service';
 import { type PushMessage, sendPushNotifications } from '../services/push-notification.service';
@@ -8,10 +9,16 @@ export const runDailyMoodReminder = async () => {
   const users = await prisma.user.findMany({
     where: {
       dailyReminderEnabled: true,
+      passwordHash: { not: PENDING_ACTIVATION_HASH },
       memberships: { some: { isLead: false } },
       checkins: { none: { date: day } },
     },
-    select: { email: true, firstName: true, pushToken: true, emailNotificationsEnabled: true },
+    select: {
+      email: true,
+      firstName: true,
+      pushToken: true,
+      emailNotificationsEnabled: true,
+    },
   });
 
   const pushMessages: PushMessage[] = users

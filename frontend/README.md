@@ -24,7 +24,7 @@ terminee par `/api/v1`. Exemples de developpement :
 npm run web
 ```
 
-La commande affiche une URL locale. Ouvrir cette URL pour verifier les ecrans.
+La commande ouvre le front commun manager/collaborateur sur http://localhost:8081. Arrêter les anciens fronts avant de le lancer.
 Pour une verification uniquement sur le Mac, `npm run web -- --localhost`.
 
 Sur telephone, `npm start` puis ouvrir avec une version compatible d'Expo Go.
@@ -74,6 +74,14 @@ client HTTP. Le serveur controle le role et l'equipe. La reponse est validee
 avant affichage. La couleur et la mascotte dependent du statut renvoye par le
 serveur. Un score masque reste `null` et coupe la courbe.
 
+## Accueil et gestion des comptes
+
+L’accueil commun propose les deux espaces. Le formulaire transmet le portail choisi au serveur, qui vérifie le rôle réel après le mot de passe. Le code du choix se trouve dans `screens/auth/WelcomeScreen.tsx` ; `RootNavigator` ouvre ensuite les écrans selon le profil serveur.
+
+`navigation/SettingsStack.tsx` conserve la barre d’onglets manager pendant la gestion des collaborateurs : liste, recherche et filtres, ajout, fiche, modification et invitation. Les contrats sont regroupés dans `services/collaborator.schemas.ts` et les appels dans `store/api/collaboratorsApi.ts`.
+
+`ActivateAccountScreen` ouvre les liens `/activate-account?token=...` sur le même port. L’utilisateur définit son mot de passe ; aucun compte ne peut être activé en donnant seulement son adresse e-mail. Voir le README racine pour les migrations et la configuration SMTP / invitations locales.
+
 ## Perimetre des ecrans
 
 La connexion et les trois etats du dashboard suivent le PDF Vision Manager.
@@ -82,7 +90,7 @@ ce prototype, avec les fonctionnalites deja fournies par l'API. Le PDF ne
 contenait pas de maquette detaillee de ces ecrans secondaires.
 
 - Un seul graphique par ecran, reutilise pour les differentes periodes.
-- Pas de liste nominative des moods et pas d'appel aux membres d'une equipe.
+- Aucune liste nominative des moods. La gestion des collaborateurs concerne uniquement leurs comptes et équipes, jamais leurs réponses.
 - Les trous de donnees ne sont jamais remplaces par zero ni interpoles.
 - Le serveur produit les snapshots de facon differee : un rafraichissement
   n'implique pas un recalcul en temps reel.

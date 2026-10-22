@@ -1,6 +1,7 @@
 import { View, Pressable, StatusBar } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { type CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { ManagerSettingsParamList } from '../../navigation/SettingsStack';
 import type { RootStackParamList } from '../../navigation/navigation.types';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { AppHeader } from '../../components/layout/AppHeader';
@@ -14,7 +15,13 @@ import { useProfileQuery } from '../../store/api/usersApi';
 import { useAuth } from '../../hooks/useAuth';
 import { colors } from '../../theme/colors';
 export function SettingsScreen({ onBack }: { onBack?: () => void }) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<
+      CompositeNavigationProp<
+        NativeStackNavigationProp<ManagerSettingsParamList>,
+        NativeStackNavigationProp<RootStackParamList>
+      >
+    >();
   const { currentData: profile } = useProfileQuery();
   const { session, signOut } = useAuth();
   const row = (title: string, icon: IconName, onPress: () => void) => (
@@ -65,6 +72,12 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
           </View>
         </Card>
         <Card style={{ gap: 0 }}>
+          {session?.user.role !== 'COLLABORATEUR' && (
+            <>
+              {row('Collaborateurs', 'users', () => navigation.navigate('Collaborators'))}
+              <Divider />
+            </>
+          )}
           {row('Mon profil et mon mot de passe', 'user', () => navigation.navigate('Profile'))}
           <Divider />
           {row('Préférences de notification', 'bell', () => navigation.navigate('Notifications'))}

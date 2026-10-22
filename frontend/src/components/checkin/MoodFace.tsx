@@ -5,7 +5,7 @@ import type { CheckinMood } from '../../types/checkin.types';
 export function MoodFace({ mood }: { mood: CheckinMood }) {
   const gradient = `face-${mood}`;
   return (
-    <Svg width={38} height={38} viewBox="0 0 48 48" accessible={false}>
+    <Svg width={38} height={38} viewBox="0 0 48 48" aria-hidden={true}>
       <Defs>
         <LinearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#FFF58C" />

@@ -6,6 +6,7 @@ const model = () => ({
   create: jest.fn(),
   createMany: jest.fn(),
   update: jest.fn(),
+  updateMany: jest.fn(),
   upsert: jest.fn(),
   delete: jest.fn(),
   deleteMany: jest.fn(),

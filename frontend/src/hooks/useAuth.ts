@@ -36,7 +36,7 @@ export function useAuth() {
   const [login, result] = useLoginMutation();
   const signIn = async (input: LoginInput) => {
     const response = await login(input).unwrap();
-    // Le profil vient du serveur : aucun choix de rôle dans le formulaire.
+    // Le choix de portail oriente la connexion ; le rôle vient toujours du serveur.
     const profile = await requestApi<Profile>('/users/me', {
       token: response.token,
       schema: profileSchema,

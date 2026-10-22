@@ -3,7 +3,7 @@ import type { ManagerTabsParamList } from './navigation.types';
 import { TabBar } from '../components/layout/TabBar';
 import { MoodMapScreen } from '../screens/manager/MoodMapScreen';
 import { EvolutionScreen } from '../screens/manager/EvolutionScreen';
-import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { SettingsStack } from './SettingsStack';
 const Tabs = createBottomTabNavigator<ManagerTabsParamList>();
 export function ManagerTabs() {
   return (
@@ -13,7 +13,7 @@ export function ManagerTabs() {
     >
       <Tabs.Screen name="MoodMap" component={MoodMapScreen} options={{ title: 'Mood map' }} />
       <Tabs.Screen name="Evolution" component={EvolutionScreen} options={{ title: 'Évolution' }} />
-      <Tabs.Screen name="Settings" component={SettingsScreen} options={{ title: 'Paramètres' }} />
+      <Tabs.Screen name="Settings" component={SettingsStack} options={{ title: 'Paramètres' }} />
     </Tabs.Navigator>
   );
 }

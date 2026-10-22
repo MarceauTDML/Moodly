@@ -1,109 +1,97 @@
-# Moodly — backend Rajeeva et frontend collaborateur
+# Moodly — manager et collaborateur dans le même front
 
-Ce dossier est une copie autonome à ouvrir sur ton ordinateur.
+Application React Native / TypeScript avec Expo, API Node.js / Express / TypeScript et PostgreSQL via Prisma. Le code conserve les dossiers `frontend/` et `backend/` et la séparation écrans, navigation, composants, services et dépôts de données.
 
-- `backend/` : copie à l'identique du backend de `MarceauTDML/Moodly`, branche `Rajeeva`, commit `bf0ab9fb8f1d3a4880742542b90df271a8e549fd` vérifié le 21 octobre 2026.
-- `frontend/` : interface React Native / TypeScript avec le parcours collaborateur préparé à partir de l'arborescence de Marceau et de la vision de Marie.
-- `docker-compose.yml` : configuration de la même branche `Rajeeva`.
+Les deux espaces utilisent **un seul front sur http://localhost:8081**. L’API écoute séparément sur http://localhost:3000. L’accueil propose « Vous êtes collaborateur ? » et « Vous êtes manager ? ». Le serveur vérifie le rôle du compte après validation du mot de passe ; le choix de l’accueil ne donne aucun droit supplémentaire.
 
-Le frontend utilise la connexion partagée. Un compte dont le rôle serveur est `COLLABORATEUR` ouvre la saisie quotidienne ; les écrans manager existants restent disponibles pour leurs rôles respectifs. Aucun choix manuel du rôle n'est ajouté.
+Les écrans reprennent les maquettes de Marie : couleurs lavande et bleu, typographie Inter, cartes arrondies, saisie du mood et gestion des collaborateurs.
 
-Les fichiers `.env` réels, dépendances installées, fichiers de build et historique `.git` ne sont pas inclus. Les fichiers `.env.example` servent de modèles. Aucun push n'est nécessaire pour tester ce dossier.
+## Mettre à jour une installation existante
 
-## 1. Préparer le dossier
-
-Décompresse l'archive dans Téléchargements. Tu obtiendras :
-
-```text
-~/Downloads/Moodly-collaborateur-local/
-```
-
-Garde ce dossier séparé de `Moodly-Rajeeva` pour tester la partie collaborateur sans remplacer ta copie actuelle.
-
-Node.js 22.13 ou plus récent est nécessaire.
-
-## 2. Démarrer le backend
-
-Si ton backend actuel tourne déjà sur le port 3000, tu peux le garder et passer directement à l'étape du frontend.
-
-Pour lancer celui de cette archive :
+Depuis la racine de votre copie du dépôt, sur la branche `Rajeeva` :
 
 ```bash
-cd "$HOME/Downloads/Moodly-collaborateur-local/backend"
-npm ci
+git switch Rajeeva
+git pull --ff-only origin Rajeeva
 ```
 
-Copie manuellement ton fichier `backend/.env` existant dans ce nouveau dossier, sur ton Mac. Cela permet de réutiliser les mêmes paramètres locaux et comptes. Ne communique pas son contenu et ne l'ajoute pas à Git.
+Conservez vos fichiers `.env` locaux. Dans `backend/.env`, vérifiez :
 
-Pour une installation neuve, crée plutôt ton fichier local avec :
-
-```bash
-cp -n .env.example .env
+```dotenv
+APP_URL=http://localhost:8081
+CORS_ORIGINS=http://localhost:8081
 ```
 
-Renseigne alors `DATABASE_URL`, tes secrets JWT locaux et les autres paramètres nécessaires. Utilise des secrets JWT uniques générés localement, et renseigne `CORS_ORIGINS=http://localhost:8081` pour le navigateur. Si le navigateur utilise un autre port, reporte son origine exacte.
-
-La base doit être accessible sur le port configuré dans `DATABASE_URL`. Avec la configuration Docker de cette branche, le port hôte prévu est 2054. Une base déjà démarrée pour ton projet peut être réutilisée.
-
-```bash
-npm run prisma:generate
-npm run dev
-```
-
-Le démarrage normal ne crée pas de nouveaux comptes et ne réinitialise pas la base. N'exécute pas `db:seed` ni `db:reset` sur ta base existante : ces commandes peuvent effacer ses données.
-
-## 3. Démarrer le frontend collaborateur
-
-Dans un deuxième terminal :
-
-```bash
-cd "$HOME/Downloads/Moodly-collaborateur-local/frontend"
-npm ci
-cp -n .env.example .env
-```
-
-Dans ce nouveau fichier `frontend/.env`, renseigne :
+Dans `frontend/.env` :
 
 ```dotenv
 EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
 ```
 
-Puis lance :
+`APP_URL` est l’adresse ouverte par les invitations et les liens de réinitialisation. Pour un téléphone ou un autre ordinateur du même réseau privé, utilisez l’adresse LAN du Mac à la place de `localhost` dans les deux fichiers.
+
+Arrêtez les anciens fronts avec Ctrl+C avant de lancer le front commun. Gardez un seul processus Expo pour cette copie.
+
+Dans le premier terminal, depuis la racine :
 
 ```bash
-npm run web -- --clear
+cd backend
+npm run prisma:generate
+npm run prisma:deploy
+npm run dev
 ```
 
-Ouvre l'adresse locale affichée par Expo. Connecte-toi avec un compte existant ayant le rôle `COLLABORATEUR` et une équipe attribuée. Un compte manager ouvre son espace manager.
+La migration ajoute trois colonnes d’invitation, sans supprimer les comptes, équipes ou réponses existants. Si les dépendances ne sont pas encore installées, exécutez `npm ci` dans ce dossier avant ces commandes.
 
-Pour l'émulateur Android, l'URL locale devient `http://10.0.2.2:3000/api/v1`. Un téléphone physique utilise l'adresse LAN du Mac sur le même réseau privé. Le SDK de l'application native doit être compatible avec Expo 57.
-
-## Parcours disponible
-
-- Quatre humeurs : Épanoui, Bien, Moyen et Stressé.
-- Catégories sélectionnables fournies par le backend.
-- Commentaire facultatif limité à 500 caractères.
-- Choix explicite de l'équipe lorsque plusieurs sont autorisées.
-- Envoi et fenêtre de confirmation.
-- Gestion du statut « déjà répondu aujourd'hui », des erreurs et de l'absence d'équipe.
-- Menu, paramètres, profil, notifications et déconnexion.
-
-Le serveur reste responsable des droits d'accès et de la limitation à une réponse par jour. La participation et le contenu du mood sont enregistrés séparément. Évite les détails identifiants dans un commentaire libre.
-
-## Vérification du contenu
-
-Les 92 fichiers du backend ont été comparés aux empreintes des fichiers Git du commit indiqué : ils sont identiques. Le frontend utilise ses routes existantes `/api/v1/moods/options`, `/api/v1/moods/today` et `POST /api/v1/moods`.
-
-Les tests se lancent avec :
+Dans le deuxième terminal, depuis la racine :
 
 ```bash
-# Dans backend/
-npm run typecheck
-npm test -- --runInBand
+cd frontend
+npm run web
+```
 
-# Dans frontend/
+Ouvrez http://localhost:8081. Reconnectez-vous après la mise à jour pour obtenir une nouvelle session. Pour les dépendances du front, utilisez `npm ci` dans `frontend/` si nécessaire. Node.js 22.13 ou plus récent est requis.
+
+## Créer un compte collaborateur
+
+1. Connectez-vous dans l’espace manager avec un compte responsable d’une équipe.
+2. Ouvrez **Paramètres → Collaborateurs → Ajouter un collaborateur**.
+3. Renseignez prénom, nom, e-mail professionnel et équipe. Le rôle reste Collaborateur.
+4. Sur sa fiche, cliquez sur **Activer le compte** pour préparer/envoyer son invitation.
+5. Le collaborateur ouvre son lien personnel, définit son mot de passe, puis se connecte depuis l’espace collaborateur.
+
+Le compte reste **en attente d’activation** jusqu’à la création du mot de passe. Le lien expire après 24 heures, ne peut être utilisé qu’une fois, et un nouvel envoi remplace l’ancien lien. L’activation par simple connaissance de l’e-mail est refusée.
+
+La liste affiche les comptes réels, les compteurs actifs/en attente, une recherche par nom ou e-mail et les fiches modifiables. Un manager peut gérer uniquement les collaborateurs de ses équipes ; l’administrateur peut gérer ceux de son entreprise. La gestion des comptes n’affiche aucune réponse individuelle au mood.
+
+## Invitations par e-mail ou en local
+
+Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.
+
+En développement, sans SMTP, la fiche affiche **Invitation préparée** et un lien à copier pour le collaborateur. Aucun e-mail n’est présenté comme envoyé. En production, l’envoi des invitations nécessite une configuration SMTP. N’inscrivez jamais ces identifiants dans Git.
+
+## Base neuve et données de démonstration
+
+Le fichier `docker-compose.yml` configure PostgreSQL sur le port hôte 2054. Pour une première installation uniquement, créez les `.env` à partir des `.env.example`, renseignez vos secrets JWT locaux et démarrez la base avec `docker compose up -d`, puis appliquez les migrations.
+
+Le seed actuel efface et recrée les données : utilisez-le uniquement sur une base de démonstration dédiée. `SEED_DEMO_MOODS=false` est la valeur par défaut : il crée les comptes et équipes de démonstration sans inventer de réponses. Les managers voient donc l’état sans réponses tant que personne n’a participé. Pour un historique fictif explicitement souhaité, `SEED_DEMO_MOODS=true` l’active avant de lancer le seed sur cette base dédiée.
+
+## Vérifications
+
+Dans `backend/` :
+
+```bash
+npm run typecheck
+npm run build
+npm test -- --runInBand
+```
+
+Dans `frontend/` :
+
+```bash
 npm run typecheck
 npm test
+npm run format:check
 ```
 
-Les tests backend simulent Prisma et n'utilisent pas ta base réelle. Le ZIP contient le backend existant de ta branche ; il conserve donc également ses dépendances et ses choix de configuration. La présence des fichiers ne constitue pas un audit de sécurité complet.
+Les tests automatisés couvrent notamment les invitations à usage unique, les rôles, le périmètre des équipes, le refus des comptes en attente, le contrat HTTP et l’anonymisation des réponses. Ils simulent Prisma et ne touchent pas votre base.

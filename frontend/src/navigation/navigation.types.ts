@@ -5,7 +5,9 @@ export type ManagerTabsParamList = {
   Settings: undefined;
 };
 export type RootStackParamList = {
-  Login: undefined;
+  Welcome: undefined;
+  Login: { portal?: 'employee' | 'manager' } | undefined;
+  ActivateAccount: { token?: string } | undefined;
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;
   Manager: NavigatorScreenParams<ManagerTabsParamList> | undefined;

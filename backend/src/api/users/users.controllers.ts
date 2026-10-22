@@ -3,6 +3,8 @@ import { getBody, getParams, getQuery } from '../../middlewares/validate.middlew
 import { sendNoContent, sendSuccess } from '../../utils/response.util';
 import { usersService } from './users.services';
 import type {
+  CollaboratorInput,
+  UpdateCollaboratorInput,
   ChangePasswordInput,
   CreateUserInput,
   ListUsersQuery,
@@ -14,6 +16,38 @@ import type {
 } from './users.validators';
 
 export const usersController = {
+  async listCollaborators(req: Request, res: Response) {
+    sendSuccess(res, await usersService.listCollaborators(req.user!));
+  },
+  async getCollaborator(req: Request, res: Response) {
+    sendSuccess(
+      res,
+      await usersService.getCollaborator(req.user!, getParams<UserIdParams>(req).userId),
+    );
+  },
+  async createCollaborator(req: Request, res: Response) {
+    sendSuccess(
+      res,
+      await usersService.createCollaborator(req.user!, getBody<CollaboratorInput>(req)),
+      201,
+    );
+  },
+  async updateCollaborator(req: Request, res: Response) {
+    sendSuccess(
+      res,
+      await usersService.updateCollaborator(
+        req.user!,
+        getParams<UserIdParams>(req).userId,
+        getBody<UpdateCollaboratorInput>(req),
+      ),
+    );
+  },
+  async inviteCollaborator(req: Request, res: Response) {
+    sendSuccess(
+      res,
+      await usersService.inviteCollaborator(req.user!, getParams<UserIdParams>(req).userId),
+    );
+  },
   async getMe(req: Request, res: Response) {
     sendSuccess(res, await usersService.getProfile(req.user!.id));
   },
@@ -32,7 +66,13 @@ export const usersController = {
   },
 
   async updateNotifications(req: Request, res: Response) {
-    sendSuccess(res, await usersService.updateNotificationSettings(req.user!.id, getBody<NotificationSettingsInput>(req)));
+    sendSuccess(
+      res,
+      await usersService.updateNotificationSettings(
+        req.user!.id,
+        getBody<NotificationSettingsInput>(req),
+      ),
+    );
   },
 
   async setPushToken(req: Request, res: Response) {
@@ -52,7 +92,14 @@ export const usersController = {
   },
 
   async update(req: Request, res: Response) {
-    sendSuccess(res, await usersService.update(req.user!, getParams<UserIdParams>(req).userId, getBody<UpdateUserInput>(req)));
+    sendSuccess(
+      res,
+      await usersService.update(
+        req.user!,
+        getParams<UserIdParams>(req).userId,
+        getBody<UpdateUserInput>(req),
+      ),
+    );
   },
 
   async remove(req: Request, res: Response) {

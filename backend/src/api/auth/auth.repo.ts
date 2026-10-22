@@ -1,7 +1,30 @@
 import { prisma } from '../../config/prisma.config';
 import { Role } from '@prisma/client';
+import { PENDING_ACTIVATION_HASH } from '../../config/auth.config';
 
 export const authRepo = {
+  findInvitation: (hash: string) =>
+    prisma.user.findFirst({
+      where: {
+        invitationToken: hash,
+        invitationTokenExpiry: { gt: new Date() },
+        passwordHash: PENDING_ACTIVATION_HASH,
+      },
+    }),
+  activate: (id: string, hash: string, passwordHash: string) =>
+    prisma.user.updateMany({
+      where: {
+        id,
+        invitationToken: hash,
+        invitationTokenExpiry: { gt: new Date() },
+        passwordHash: PENDING_ACTIVATION_HASH,
+      },
+      data: {
+        passwordHash,
+        invitationToken: null,
+        invitationTokenExpiry: null,
+      },
+    }),
   // Recherche par e-mail dans la base PostgreSQL
   async findByEmail(email: string) {
     return prisma.user.findUnique({

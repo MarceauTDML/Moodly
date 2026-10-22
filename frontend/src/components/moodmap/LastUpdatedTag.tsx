@@ -1,7 +1,9 @@
 import { View } from 'react-native';
 import { Text } from '../ui/Text';
 import { Icon } from '../ui/Icon';
-export function LastUpdatedTag({ time, color }: { time: string | null; color: string }) {
+import { formatDate } from '../../utils/date.util';
+// Le serveur n'expose que des journées terminées : on affiche la journée, pas l'heure du calcul.
+export function LastUpdatedTag({ date, color }: { date: string | null; color: string }) {
   return (
     <View
       style={{
@@ -13,7 +15,7 @@ export function LastUpdatedTag({ time, color }: { time: string | null; color: st
       }}
     >
       <Text style={{ color, fontSize: 10, lineHeight: 16 }}>
-        Dernière mise à jour {time ? `à ${time}` : 'indisponible'}
+        {date ? `Données du ${formatDate(date)}` : 'Données indisponibles'}
       </Text>
       <Icon name="info" size={11} color={color} />
     </View>

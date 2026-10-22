@@ -1,9 +1,9 @@
 import { prisma } from '../../config/prisma.config';
 
 export const moodmapRepo = {
-  findLatestSnapshot: (teamId: string, minResponses: number) =>
+  findLatestSnapshot: (teamId: string, minResponses: number, until: Date) =>
     prisma.moodSnapshot.findFirst({
-      where: { teamId, totalResponses: { gte: minResponses } },
+      where: { teamId, totalResponses: { gte: minResponses }, date: { lte: until } },
       orderBy: { date: 'desc' },
     }),
 
@@ -21,6 +21,7 @@ export const moodmapRepo = {
       select: {
         mood: true,
         comment: true,
+        submittedAt: true,
         tags: { select: { tag: { select: { code: true, label: true } } } },
       },
     }),

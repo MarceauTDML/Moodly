@@ -47,6 +47,10 @@ describe('GET /api/v1/moodmap/summary', () => {
     const res = await request(app).get('/api/v1/moodmap/summary').set(auth);
 
     expect(res.status).toBe(200);
+    // Seules les journées terminées sont lues : jamais l'agrégat du jour en cours.
+    expect(prismaMock.moodSnapshot.findFirst.mock.calls[0][0].where.date).toEqual({
+      lte: new Date(today().getTime() - 86400000),
+    });
     expect(res.body.data).toMatchObject({
       hasEnoughData: true,
       score: 98,
@@ -98,12 +102,12 @@ describe('GET /api/v1/moodmap/summary', () => {
 });
 
 describe('GET /api/v1/moodmap/history', () => {
-  it('renvoie 30 points J1…J30 et masque les jours sous le seuil', async () => {
+  it('renvoie 30 points J1…J30 jusqu’à hier et masque les jours sous le seuil', async () => {
     const auth = asManager();
-    const day = today();
+    const yesterday = new Date(today().getTime() - 86400000);
     prismaMock.moodSnapshot.findMany.mockResolvedValue([
-      snapshot({ date: day, averageScore: 98.04 }),
-      snapshot({ date: new Date(day.getTime() - 86400000), totalResponses: 2 }),
+      snapshot({ date: new Date(yesterday.getTime() - 86400000), averageScore: 10, totalResponses: 2 }),
+      snapshot({ date: yesterday, averageScore: 98.04 }),
     ]);
 
     const res = await request(app).get('/api/v1/moodmap/history?days=30').set(auth);
@@ -112,8 +116,10 @@ describe('GET /api/v1/moodmap/history', () => {
     const { points, zones } = res.body.data;
     expect(points).toHaveLength(30);
     expect(points[0].label).toBe('J1');
-    expect(points[29]).toMatchObject({ label: 'J30', score: 98, status: 'PARFAIT' });
-    expect(points[28]).toMatchObject({ score: null, totalResponses: 2 });
+    expect(points[29]).toMatchObject({ label: 'J30', date: yesterday.toISOString().slice(0, 10), score: 98, status: 'PARFAIT' });
+    expect(points[28]).toMatchObject({ score: null, status: null, totalResponses: null });
+    // La journée sous le seuil n'entre pas dans l'agrégat de la période.
+    expect(res.body.data.period).toEqual({ totalResponses: 24, averageScore: 98, status: 'PARFAIT' });
     expect(zones.map((z: { label: string }) => z.label)).toEqual(['Humeur idéale', 'Humeur passable', 'Humeur préoccupante']);
   });
 
@@ -125,15 +131,19 @@ describe('GET /api/v1/moodmap/history', () => {
 });
 
 describe('GET /api/v1/moodmap/trends', () => {
-  it('agrège tags et humeurs de la période', async () => {
+  it('agrège les journées terminées au-dessus du seuil et masque les petits tags', async () => {
     const auth = asManager();
     const tag = (code: string) => ({ tag: { code, label: `#${code}` } });
+    const yesterdayNoon = new Date(today().getTime() - 12 * 3600000);
+    const twoDaysAgoNoon = new Date(today().getTime() - 36 * 3600000);
     prismaMock.moodEntry.findMany
       .mockResolvedValueOnce([
-        { mood: 'STRESSE', comment: 'Trop de rush', tags: [tag('CHARGE_DE_TRAVAIL')] },
-        { mood: 'STRESSE', comment: null, tags: [tag('CHARGE_DE_TRAVAIL')] },
-        { mood: 'EPANOUI', comment: null, tags: [tag('AMBIANCE_EQUIPE')] },
-        { mood: 'BIEN', comment: null, tags: [] },
+        { mood: 'STRESSE', comment: 'Trop de rush', submittedAt: yesterdayNoon, tags: [tag('CHARGE_DE_TRAVAIL')] },
+        { mood: 'STRESSE', comment: null, submittedAt: yesterdayNoon, tags: [tag('CHARGE_DE_TRAVAIL')] },
+        { mood: 'MOYEN', comment: null, submittedAt: yesterdayNoon, tags: [tag('CHARGE_DE_TRAVAIL')] },
+        { mood: 'EPANOUI', comment: null, submittedAt: yesterdayNoon, tags: [tag('AMBIANCE_EQUIPE')] },
+        // Seule réponse de sa journée : elle ne doit apparaître dans aucun agrégat.
+        { mood: 'BIEN', comment: 'Seul ce jour-là', submittedAt: twoDaysAgoNoon, tags: [tag('AMBIANCE_EQUIPE')] },
       ])
       .mockResolvedValueOnce([]);
     prismaMock.tag.findMany.mockResolvedValue([
@@ -147,9 +157,15 @@ describe('GET /api/v1/moodmap/trends', () => {
     expect(res.status).toBe(200);
     const data = res.body.data;
     expect(data.hasEnoughData).toBe(true);
-    expect(data.averageScore).toBe(56.3);
-    expect(data.tags[0]).toMatchObject({ code: 'CHARGE_DE_TRAVAIL', count: 2, percentage: 50, averageScore: null });
+    expect(data.totalResponses).toBe(4);
+    expect(data.tags).toEqual([
+      expect.objectContaining({ code: 'CHARGE_DE_TRAVAIL', count: 3, percentage: 75 }),
+    ]);
     expect(data.moods.find((m: { code: string }) => m.code === 'STRESSE').count).toBe(2);
+    expect(data.moods.find((m: { code: string }) => m.code === 'BIEN').count).toBe(0);
     expect(data.comments).toEqual(['Trop de rush']);
+    // La période s'arrête à hier : les réponses du jour ne sont jamais lues.
+    const { submittedAt } = prismaMock.moodEntry.findMany.mock.calls[0][0].where;
+    expect(submittedAt.lt).toEqual(today());
   });
 });

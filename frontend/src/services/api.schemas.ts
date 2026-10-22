@@ -81,7 +81,7 @@ export const historySchema = z.object({
       date: z.string(),
       score,
       status: status.nullable(),
-      totalResponses: count,
+      totalResponses: count.nullable(),
     }),
   ),
 });

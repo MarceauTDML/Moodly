@@ -19,4 +19,5 @@ export type RootStackParamList = {
 export type EmployeeStackParamList = {
   DailyCheckin: undefined;
   EmployeeSettings: undefined;
+  MyHistory: undefined;
 };

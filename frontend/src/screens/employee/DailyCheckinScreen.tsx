@@ -154,6 +154,13 @@ export function DailyCheckinScreen({
           }}
         />
         <TextLink
+          title="Mon historique"
+          onPress={() => {
+            setMenu(false);
+            navigation.navigate('MyHistory');
+          }}
+        />
+        <TextLink
           title="Paramètres"
           onPress={() => {
             setMenu(false);

@@ -17,6 +17,7 @@ import type {
   ListUsersQuery,
   NotificationSettingsInput,
   PushTokenInput,
+  RemovePushTokenInput,
   UpdateMeInput,
   UpdateUserInput,
 } from './users.validators';
@@ -229,6 +230,11 @@ export const usersService = {
 
   async setPushToken(userId: string, { pushToken }: PushTokenInput) {
     return toNotificationSettings(await usersRepo.update(userId, { pushToken }));
+  },
+
+  // À la déconnexion : un autre téléphone enregistré entre-temps garde ses notifications.
+  async removePushToken(userId: string, { pushToken }: RemovePushTokenInput) {
+    await usersRepo.clearPushToken(userId, pushToken);
   },
 
   list(companyId: string, query: ListUsersQuery) {

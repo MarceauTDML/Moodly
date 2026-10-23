@@ -13,6 +13,7 @@ import {
   listUsersQuerySchema,
   notificationSettingsSchema,
   pushTokenSchema,
+  removePushTokenSchema,
   updateMeSchema,
   updateUserSchema,
   userIdParamsSchema,
@@ -46,6 +47,11 @@ usersRoutes.put(
   '/me/push-token',
   validate({ body: pushTokenSchema }),
   usersController.setPushToken,
+);
+usersRoutes.delete(
+  '/me/push-token',
+  validate({ body: removePushTokenSchema }),
+  usersController.removePushToken,
 );
 
 usersRoutes.get(

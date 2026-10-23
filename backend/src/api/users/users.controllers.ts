@@ -11,6 +11,7 @@ import type {
   ListUsersQuery,
   NotificationSettingsInput,
   PushTokenInput,
+  RemovePushTokenInput,
   UpdateMeInput,
   UpdateUserInput,
   UserIdParams,
@@ -87,6 +88,11 @@ export const usersController = {
 
   async setPushToken(req: Request, res: Response) {
     sendSuccess(res, await usersService.setPushToken(req.user!.id, getBody<PushTokenInput>(req)));
+  },
+
+  async removePushToken(req: Request, res: Response) {
+    await usersService.removePushToken(req.user!.id, getBody<RemovePushTokenInput>(req));
+    sendNoContent(res);
   },
 
   async list(req: Request, res: Response) {

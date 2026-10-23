@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './navigation.types';
 import { ManagerTabs } from './ManagerTabs';
@@ -20,6 +20,7 @@ import { ScreenContainer } from '../components/layout/ScreenContainer';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import { SupportScreen } from '../screens/settings/SupportScreen';
+import { useOpenCheckinFromNotification } from '../hooks/useNotificationNavigation';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const EmployeeHome = () => (
   <RoleGuard roles={['COLLABORATEUR']}>
@@ -36,9 +37,11 @@ const Trends = (props: React.ComponentProps<typeof TeamTrendsScreen>) => (
     <TeamTrendsScreen {...props} />
   </RoleGuard>
 );
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
 export function RootNavigator() {
   const { session, bootstrapping, bootstrapError, retryBootstrap, signOut } = useAuth();
   const space = accessSpace(session?.user.role);
+  useOpenCheckinFromNotification(navigationRef, space === 'employee');
   if (bootstrapping) return <LoadingOverlay />;
   if (bootstrapError)
     return (
@@ -53,6 +56,7 @@ export function RootNavigator() {
     );
   return (
     <NavigationContainer
+      ref={navigationRef}
       linking={{
         prefixes: ['moodmap://'],
         config: {

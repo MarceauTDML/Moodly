@@ -92,6 +92,9 @@ export const usersRepo = {
 
   delete: (id: string) => prisma.user.delete({ where: { id } }),
 
+  clearPushToken: (id: string, pushToken: string) =>
+    prisma.user.updateMany({ where: { id, pushToken }, data: { pushToken: null } }),
+
   countAdmins: (companyId: string) => prisma.user.count({ where: { companyId, role: 'ADMIN' } }),
 
   findForExport: (id: string) =>

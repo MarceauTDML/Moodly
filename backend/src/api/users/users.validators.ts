@@ -55,6 +55,11 @@ export const notificationSettingsSchema = z
     error: 'Aucune donnée à mettre à jour',
   });
 
+// Désinscription d'un appareil : le jeton n'est effacé que s'il est encore celui du compte.
+export const removePushTokenSchema = z.object({
+  pushToken: z.string().regex(/^Expo(nent)?PushToken\[[^\]]+\]$/, { error: 'Jeton Expo invalide' }),
+});
+
 export const pushTokenSchema = z.object({
   pushToken: z
     .string()
@@ -106,6 +111,7 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type DeleteMeInput = z.infer<typeof deleteMeSchema>;
 export type NotificationSettingsInput = z.infer<typeof notificationSettingsSchema>;
 export type PushTokenInput = z.infer<typeof pushTokenSchema>;
+export type RemovePushTokenInput = z.infer<typeof removePushTokenSchema>;
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

@@ -30,10 +30,25 @@ export const runDailyMoodReminder = async () => {
       data: { screen: 'DailyCheckin' },
     }));
 
-  const emailTargets = users.filter((u) => !u.pushToken && u.emailNotificationsEnabled);
+  const report = await sendPushNotifications(pushMessages);
+  // Un appareil désinscrit (application supprimée, autorisation retirée) ne recevra plus rien.
+  if (report.unregistered.length)
+    await prisma.user.updateMany({
+      where: { pushToken: { in: report.unregistered } },
+      data: { pushToken: null },
+    });
 
-  const pushed = await sendPushNotifications(pushMessages);
+  // Sans push réussi, le rappel part par e-mail si l'utilisateur l'accepte.
+  const delivered = new Set(report.delivered);
+  const emailTargets = users.filter(
+    (u) => u.emailNotificationsEnabled && !(u.pushToken && delivered.has(u.pushToken)),
+  );
   for (const user of emailTargets) await emailService.sendDailyReminder(user.email, user.firstName);
 
-  return { candidates: users.length, pushed, emailed: emailTargets.length };
+  return {
+    candidates: users.length,
+    pushed: report.delivered.length,
+    unregistered: report.unregistered.length,
+    emailed: emailTargets.length,
+  };
 };

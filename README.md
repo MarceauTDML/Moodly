@@ -83,6 +83,22 @@ Chaque contact accepte `label`, `description`, `phone` et `url` (HTTPS uniquemen
 
 Après un vote, si au moins 3 des 5 derniers votes des 14 derniers jours sont « Stressé », la confirmation propose d’ouvrir ces ressources. Ce calcul utilise l’historique enregistré sur le téléphone : rien n’est envoyé au serveur, et l’application n’enregistre ni l’affichage de la proposition ni les appels. Ce n’est pas un diagnostic, seulement une invitation.
 
+## Notifications push
+
+Dans **Paramètres → Préférences de notification**, l’utilisateur choisit de recevoir le rappel quotidien sur son téléphone. L’autorisation n’est demandée qu’à ce moment-là, jamais au démarrage. Un seul téléphone reçoit les rappels d’un compte : en enregistrer un nouveau remplace le précédent. Toucher la notification ouvre la saisie du mood.
+
+À la déconnexion, le téléphone est désinscrit, sans toucher à un autre téléphone enregistré entre-temps. Si l’envoi push échoue, le rappel part par e-mail (si l’utilisateur l’accepte), et les appareils désinscrits sont oubliés automatiquement.
+
+Deux étapes sont nécessaires pour recevoir de vraies notifications :
+
+1. **Associer un projet Expo**, une seule fois, depuis `frontend/` avec un compte Expo. La commande ajoute l’identifiant du projet à `app.json` :
+
+   ```bash
+   npx eas-cli init
+   ```
+
+2. **Sur Android, utiliser une version de développement** : depuis le SDK 53, Expo Go ne reçoit plus les notifications à distance. Par exemple `npx expo run:android` (Android Studio requis) ou un build EAS. L’application l’indique dans l’écran des préférences.
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.

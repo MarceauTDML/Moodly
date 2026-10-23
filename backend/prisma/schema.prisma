@@ -26,6 +26,11 @@ enum MoodStatus {
   PREOCCUPANT
 }
 
+enum TwoFactorMethod {
+  TOTP
+  EMAIL
+}
+
 enum TagCategory {
   CHARGE_DE_TRAVAIL
   AMBIANCE_EQUIPE
@@ -65,18 +70,30 @@ model Team {
 }
 
 model User {
-  id               String    @id @default(uuid())
-  email            String    @unique
-  passwordHash     String
-  firstName        String
-  lastName         String
-  role             Role      @default(COLLABORATEUR)
-  companyId        String
-  resetToken       String?
-  resetTokenExpiry DateTime?
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  role                  Role      @default(COLLABORATEUR)
+  companyId             String
+  resetToken            String?
+  resetTokenExpiry      DateTime?
   invitationToken       String?
   invitationTokenExpiry DateTime?
   invitationSentAt      DateTime?
+
+  // Double authentification (facultative). Secrets chiffrés, codes de secours hachés.
+  twoFactorMethod        TwoFactorMethod?
+  twoFactorSecret        String?
+  twoFactorPendingMethod TwoFactorMethod?
+  twoFactorPendingSecret String?
+  twoFactorLastStep      Int?
+  twoFactorRecoveryCodes String[]         @default([])
+  twoFactorCodeHash      String?
+  twoFactorCodeExpiry    DateTime?
+  twoFactorAttempts      Int              @default(0)
+  twoFactorLockedUntil   DateTime?
 
   pushToken                 String?
   dailyReminderEnabled      Boolean @default(true)

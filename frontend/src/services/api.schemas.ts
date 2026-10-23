@@ -32,6 +32,28 @@ export const loginSchema = tokensSchema.extend({
   message: z.string(),
   user: sessionUser,
 });
+const twoFactorMethod = z.enum(['TOTP', 'EMAIL']);
+// Mot de passe correct, mais le compte demande encore un code (double authentification).
+export const twoFactorChallengeSchema = z.object({
+  message: z.string(),
+  twoFactorRequired: z.literal(true),
+  method: twoFactorMethod,
+  challengeToken: z.string().min(1),
+  email: z.string().optional(),
+});
+export const loginResultSchema = z.union([twoFactorChallengeSchema, loginSchema]);
+export const twoFactorStatusSchema = z.object({
+  method: twoFactorMethod.nullable(),
+  recoveryCodesLeft: z.number().int().nonnegative(),
+});
+export const twoFactorSetupSchema = z.union([
+  z.object({ method: z.literal('TOTP'), secret: z.string().min(16), otpauthUrl: z.string() }),
+  z.object({ method: z.literal('EMAIL'), email: z.string() }),
+]);
+export const twoFactorConfirmSchema = z.object({
+  method: twoFactorMethod,
+  recoveryCodes: z.array(z.string()),
+});
 export const profileSchema = sessionUser.extend({
   firstName: z.string(),
   lastName: z.string(),

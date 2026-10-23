@@ -7,6 +7,7 @@ import {
 } from '../../services/token.service';
 import { hashPassword, sha256, verifyPassword } from '../../utils/hash.util';
 import { ApiError } from '../../utils/response.util';
+import { twoFactorService } from '../two-factor/two-factor.services';
 import { authRepo } from './auth.repo';
 import type { RegisterInput, LoginInput, RefreshInput } from './auth.validators';
 
@@ -47,6 +48,8 @@ export const authService = {
         'WRONG_PORTAL',
       );
     }
+    // Mot de passe correct : avec la double authentification, la session attend encore un code.
+    if (user.twoFactorMethod) return twoFactorService.challenge(user);
     return {
       message: 'Connexion réussie',
       token: signAccessToken(user),

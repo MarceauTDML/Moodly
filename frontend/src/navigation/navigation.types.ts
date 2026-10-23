@@ -16,6 +16,7 @@ export type RootStackParamList = {
   Profile: undefined;
   Notifications: undefined;
   Support: undefined;
+  TwoFactor: undefined;
 };
 export type EmployeeStackParamList = {
   DailyCheckin: undefined;

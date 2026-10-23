@@ -13,6 +13,8 @@ import { errorMessage } from '../../services/api.client';
 import { isEmail } from '../../utils/validators.util';
 import { useAppTheme } from '../../theme/ThemeProvider';
 import { useTypography } from '../../theme/typography';
+import { TwoFactorLoginStep } from '../../components/auth/TwoFactorLoginStep';
+import type { TwoFactorChallenge } from '../../types/auth.types';
 export function LoginScreen({
   navigation,
   route,
@@ -24,6 +26,7 @@ export function LoginScreen({
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [challenge, setChallenge] = useState<TwoFactorChallenge | null>(null);
   const { signIn } = useAuth();
   const submit = async () => {
     if (busy) return;
@@ -34,7 +37,7 @@ export function LoginScreen({
     setBusy(true);
     setError(null);
     try {
-      await signIn({ email: email.trim().toLowerCase(), password, portal });
+      setChallenge(await signIn({ email: email.trim().toLowerCase(), password, portal }));
       setPassword('');
     } catch (e) {
       setError(errorMessage(e));
@@ -65,56 +68,60 @@ export function LoginScreen({
             La mood map pour suivre comment se portent les collaborateurs de votre entreprise.
           </Text>
         </View>
-        <View style={{ gap: 24 }}>
-          <View style={{ gap: 5 }}>
-            <Text style={[typography.heading, { fontSize: 20 }]}>Connectez-vous</Text>
-            <Text style={{ color: colors.muted, fontSize: 13 }}>
-              {portal === 'manager' ? 'Espace manager' : 'Espace collaborateur'}
-            </Text>
+        {challenge ? (
+          <TwoFactorLoginStep challenge={challenge} onCancel={() => setChallenge(null)} />
+        ) : (
+          <View style={{ gap: 24 }}>
+            <View style={{ gap: 5 }}>
+              <Text style={[typography.heading, { fontSize: 20 }]}>Connectez-vous</Text>
+              <Text style={{ color: colors.muted, fontSize: 13 }}>
+                {portal === 'manager' ? 'Espace manager' : 'Espace collaborateur'}
+              </Text>
+            </View>
+            <Input
+              label="E-mail professionnel"
+              placeholder="prenom.nom@entreprise.fr"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              maxLength={254}
+              editable={!busy}
+            />
+            <Input
+              label="Mot de passe"
+              placeholder="Votre mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoComplete="current-password"
+              textContentType="password"
+              maxLength={128}
+              onSubmitEditing={() => void submit()}
+              editable={!busy}
+            />
+            <TextLink
+              title="Mot de passe oublié ?"
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={{ alignSelf: 'flex-end', marginTop: -14, marginBottom: -10 }}
+            />
+            {error && (
+              <Text accessibilityRole="alert" style={{ color: colors.danger }}>
+                {error}
+              </Text>
+            )}
+            <Button title="Se connecter" onPress={() => void submit()} loading={busy} />
+            {portal === 'employee' && (
+              <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 20 }}>
+                Première connexion ? Ouvrez l’invitation de votre manager pour créer votre mot de
+                passe.
+              </Text>
+            )}
           </View>
-          <Input
-            label="E-mail professionnel"
-            placeholder="prenom.nom@entreprise.fr"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            textContentType="emailAddress"
-            maxLength={254}
-            editable={!busy}
-          />
-          <Input
-            label="Mot de passe"
-            placeholder="Votre mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoComplete="current-password"
-            textContentType="password"
-            maxLength={128}
-            onSubmitEditing={() => void submit()}
-            editable={!busy}
-          />
-          <TextLink
-            title="Mot de passe oublié ?"
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={{ alignSelf: 'flex-end', marginTop: -14, marginBottom: -10 }}
-          />
-          {error && (
-            <Text accessibilityRole="alert" style={{ color: colors.danger }}>
-              {error}
-            </Text>
-          )}
-          <Button title="Se connecter" onPress={() => void submit()} loading={busy} />
-          {portal === 'employee' && (
-            <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 20 }}>
-              Première connexion ? Ouvrez l’invitation de votre manager pour créer votre mot de
-              passe.
-            </Text>
-          )}
-        </View>
+        )}
       </View>
     </ScreenContainer>
   );

@@ -1,6 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { jwtConfig } from '../config/jwt.config';
-import type { AccessTokenPayload, AuthTokens, RefreshTokenPayload } from '../types/auth.types';
+import type {
+  AccessTokenPayload,
+  AuthTokens,
+  RefreshTokenPayload,
+  TwoFactorChallengePayload,
+} from '../types/auth.types';
 import { randomToken, sha256 } from '../utils/hash.util';
 import { ApiError } from '../utils/response.util';
 
@@ -77,6 +82,17 @@ export const verifyAccessToken = (token: string): { sub: string } => {
 
 export const verifyRefreshToken = (token: string) =>
   verify<RefreshTokenPayload>(token, jwtConfig.refresh.secret, 'refresh');
+
+// Valable 5 minutes : le temps de saisir le code, sans ouvrir de session.
+export const signTwoFactorChallenge = (user: Pick<TokenSubject, 'id' | 'passwordHash'>): string =>
+  jwt.sign({ ver: passwordFingerprint(user.passwordHash), type: 'two-factor' }, jwtConfig.access.secret, {
+    subject: user.id,
+    expiresIn: '5m',
+    issuer: jwtConfig.issuer,
+  });
+
+export const verifyTwoFactorChallenge = (token: string) =>
+  verify<TwoFactorChallengePayload>(token, jwtConfig.access.secret, 'two-factor');
 
 export const generateResetToken = (): { token: string; hash: string } => {
   const token = randomToken(32);

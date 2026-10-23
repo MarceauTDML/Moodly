@@ -56,7 +56,7 @@ const baseQuery: BaseQueryFn<ApiArgs, unknown, ApiFailure> = async (args, api) =
 export const baseApi = createApi({
   reducerPath: 'managerApi',
   baseQuery,
-  tagTypes: ['Profile', 'Notifications', 'Teams', 'DailyCheckin', 'Collaborators'],
+  tagTypes: ['Profile', 'Notifications', 'Teams', 'DailyCheckin', 'Collaborators', 'TwoFactor'],
   keepUnusedDataFor: 0,
   endpoints: () => ({}),
 });

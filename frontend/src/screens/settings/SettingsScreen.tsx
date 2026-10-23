@@ -82,6 +82,8 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
           )}
           {row('Mon profil et mon mot de passe', 'user', () => navigation.navigate('Profile'))}
           <Divider />
+          {row('Double authentification', 'lock', () => navigation.navigate('TwoFactor'))}
+          <Divider />
           {row('Préférences de notification', 'bell', () => navigation.navigate('Notifications'))}
           <Divider />
           {row('Besoin d’aide ?', 'info', () => navigation.navigate('Support'))}

@@ -105,6 +105,21 @@ Dans **Paramètres → Apparence**, chaque utilisateur choisit Système, Clair o
 
 Les composants ne contiennent plus de code couleur : ils lisent une palette sémantique (`frontend/src/theme/colors.ts`) via `useAppTheme()`, et leurs styles sont créés par `themedStyles()`. Seules les illustrations (visages, mascotte, teintes des humeurs) gardent leurs couleurs, avec une variante sombre. Un test vérifie que les deux palettes respectent les contrastes WCAG (4,5:1 pour le texte, 3:1 pour le texte secondaire et les éléments graphiques).
 
+## Double authentification
+
+Facultative, elle s’active dans **Paramètres → Double authentification**. Deux méthodes au choix :
+
+- **application d’authentification** (Google Authenticator, Microsoft Authenticator, 1Password…) : codes à 6 chiffres renouvelés toutes les 30 secondes (TOTP, RFC 6238). Sur le téléphone, un bouton ouvre directement l’application ; la clé peut aussi être saisie à la main ;
+- **code par e-mail** : un code à 6 chiffres, valable 10 minutes, envoyé à chaque connexion.
+
+La méthode n’est activée qu’après un premier code valide, puis 8 codes de secours à usage unique sont affichés une seule fois. Désactiver demande le mot de passe.
+
+Côté sécurité : les secrets sont chiffrés en base (AES-256-GCM), les codes de secours et codes e-mail sont hachés, un code déjà utilisé ne peut pas être rejoué, et la vérification est bloquée 15 minutes après 5 codes incorrects. La connexion renvoie d’abord un jeton de vérification valable 5 minutes, sans ouvrir de session. Le TOTP est implémenté avec le module `crypto` de Node, sans dépendance externe.
+
+Une migration ajoute les colonnes nécessaires (`npm run prisma:deploy` dans `backend/`) sans modifier les comptes existants. La clé de chiffrement peut être définie par `TWO_FACTOR_SECRET_KEY` ; sinon elle est dérivée de `JWT_REFRESH_SECRET`.
+
+Sans SMTP en développement, le code e-mail est affiché dans les logs du serveur. Pour recevoir de vrais e-mails en local, un conteneur Mailpit suffit (`SMTP_HOST=localhost`, `SMTP_PORT=1025`). En production, la méthode e-mail exige une configuration SMTP.
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.

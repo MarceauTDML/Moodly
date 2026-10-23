@@ -9,6 +9,7 @@ import { moodsRoutes } from './api/moods/moods.routes';
 import { passwordRoutes } from './api/password/password.routes';
 import { tagsRoutes } from './api/tags/tags.routes';
 import { teamsRoutes } from './api/teams/teams.routes';
+import { twoFactorAccountRoutes } from './api/two-factor/two-factor.routes';
 import { usersRoutes } from './api/users/users.routes';
 import { env, isTest } from './config/env.config';
 import { logger } from './config/logger.config';
@@ -46,6 +47,7 @@ export const createApp = () => {
   const api = express.Router();
   api.use(apiLimiter);
   api.use('/auth', authRouter);
+  api.use('/users/me/2fa', twoFactorAccountRoutes);
   api.use('/users', usersRoutes);
   api.use('/password', passwordRoutes);
   api.use('/teams', teamsRoutes);

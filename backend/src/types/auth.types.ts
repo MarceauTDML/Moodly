@@ -20,6 +20,13 @@ export interface RefreshTokenPayload {
   type: 'refresh';
 }
 
+// Étape intermédiaire de connexion : mot de passe vérifié, code de double authentification attendu.
+export interface TwoFactorChallengePayload {
+  sub: string;
+  ver: string;
+  type: 'two-factor';
+}
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

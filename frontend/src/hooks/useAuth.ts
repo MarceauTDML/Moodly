@@ -7,14 +7,14 @@ import {
   signedIn,
   signedOut,
 } from '../store/slices/authSlice';
-import { useLoginMutation } from '../store/api/authApi';
+import { useLoginMutation, useVerifyTwoFactorMutation } from '../store/api/authApi';
 import { baseApi } from '../store/api/baseApi';
 import { ApiRequestError, errorMessage, requestApi } from '../services/api.client';
 import { profileSchema } from '../services/api.schemas';
 import { secureStorage } from '../services/secureStorage.client';
 import { refreshSession } from '../services/session.client';
 import { unregisterThisDevice } from '../services/pushNotifications.client';
-import type { LoginInput, Session } from '../types/auth.types';
+import type { LoginInput, LoginResponse, Session, TwoFactorChallenge } from '../types/auth.types';
 import type { Profile } from '../types/user.types';
 
 const isRejectedSession = (error: unknown) =>
@@ -63,8 +63,8 @@ export function useAuth() {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((s) => s.auth);
   const [login, result] = useLoginMutation();
-  const signIn = async (input: LoginInput) => {
-    const response = await login(input).unwrap();
+  const [verifyTwoFactor] = useVerifyTwoFactorMutation();
+  const startSession = async (response: LoginResponse) => {
     // Le choix de portail oriente la connexion ; le rôle vient toujours du serveur.
     const profile = await requestApi<Profile>('/users/me', {
       token: response.token,
@@ -76,6 +76,15 @@ export function useAuth() {
     dispatch(signedIn({ ...tokens, user: profile }));
     result.reset();
   };
+  // Renvoie le défi si le compte demande un code : la session n'est ouverte qu'après.
+  const signIn = async (input: LoginInput): Promise<TwoFactorChallenge | null> => {
+    const response = await login(input).unwrap();
+    if ('twoFactorRequired' in response) return response;
+    await startSession(response);
+    return null;
+  };
+  const completeTwoFactor = async (challengeToken: string, code: string) =>
+    startSession(await verifyTwoFactor({ challengeToken, code }).unwrap());
   const signOut = () => {
     const session = auth.session;
     dispatch(signedOut());
@@ -83,5 +92,5 @@ export function useAuth() {
     if (session) void unregisterThisDevice(session).catch(() => undefined);
   };
   const retryBootstrap = () => dispatch(bootstrapRetried());
-  return { ...auth, signIn, signOut, retryBootstrap };
+  return { ...auth, signIn, completeTwoFactor, signOut, retryBootstrap };
 }

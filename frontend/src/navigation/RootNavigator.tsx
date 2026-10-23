@@ -1,5 +1,11 @@
+import { useMemo } from 'react';
 import { View } from 'react-native';
-import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './navigation.types';
 import { ManagerTabs } from './ManagerTabs';
@@ -21,6 +27,7 @@ import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import { SupportScreen } from '../screens/settings/SupportScreen';
 import { useOpenCheckinFromNotification } from '../hooks/useNotificationNavigation';
+import { useAppTheme } from '../theme/ThemeProvider';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const EmployeeHome = () => (
   <RoleGuard roles={['COLLABORATEUR']}>
@@ -42,6 +49,22 @@ export function RootNavigator() {
   const { session, bootstrapping, bootstrapError, retryBootstrap, signOut } = useAuth();
   const space = accessSpace(session?.user.role);
   useOpenCheckinFromNotification(navigationRef, space === 'employee');
+  const { colors, scheme } = useAppTheme();
+  // Thème de navigation aligné sur la palette : pas de flash blanc pendant les transitions.
+  const navigationTheme = useMemo(() => {
+    const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.primary,
+        background: colors.background,
+        card: colors.surface,
+        text: colors.text,
+        border: colors.border,
+      },
+    };
+  }, [colors, scheme]);
   if (bootstrapping) return <LoadingOverlay />;
   if (bootstrapError)
     return (
@@ -57,6 +80,7 @@ export function RootNavigator() {
   return (
     <NavigationContainer
       ref={navigationRef}
+      theme={navigationTheme}
       linking={{
         prefixes: ['moodmap://'],
         config: {
@@ -70,7 +94,7 @@ export function RootNavigator() {
       }}
     >
       <Stack.Navigator
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F3EFF9' } }}
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
       >
         {session ? (
           <Stack.Group navigationKey={`${session.user.id}:${space}`}>

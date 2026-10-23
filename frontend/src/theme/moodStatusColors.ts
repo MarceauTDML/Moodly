@@ -1,5 +1,17 @@
 import type { MoodStatus } from '../types/mood.types';
-export const moodStatusColors = {
+import type { ColorScheme } from './ThemeProvider';
+
+interface StatusPalette {
+  hero: string;
+  background: string;
+  text: string;
+  muted: string;
+  accent: string;
+  face: string;
+  cheek: string;
+}
+
+const light = {
   PARFAIT: {
     hero: '#EBE7F5',
     background: '#F4F0FA',
@@ -27,15 +39,30 @@ export const moodStatusColors = {
     face: '#C9DAED',
     cheek: '#A5BEDC',
   },
-} satisfies Record<
-  MoodStatus,
-  {
-    hero: string;
-    background: string;
-    text: string;
-    muted: string;
-    accent: string;
-    face: string;
-    cheek: string;
-  }
->;
+} satisfies Record<MoodStatus, StatusPalette>;
+
+// Mêmes visages et accents, fonds assombris.
+const dark = {
+  PARFAIT: {
+    ...light.PARFAIT,
+    hero: '#2A2752',
+    background: '#181A2E',
+    text: '#ECEBFA',
+    muted: '#A9A8CC',
+    accent: '#7CC497',
+  },
+  MOYENNE: {
+    ...light.MOYENNE,
+    hero: '#22303F',
+    background: '#151C26',
+    text: '#E3EAF3',
+    muted: '#9EB0C6',
+    accent: '#E5A85F',
+  },
+  PREOCCUPANT: { ...light.PREOCCUPANT, background: '#121722', accent: '#F08E9C' },
+} satisfies Record<MoodStatus, StatusPalette>;
+
+export const moodStatusColors: Record<ColorScheme, Record<MoodStatus, StatusPalette>> = {
+  light,
+  dark,
+};

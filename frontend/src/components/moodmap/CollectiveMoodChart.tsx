@@ -5,7 +5,7 @@ import { Text } from '../ui/Text';
 import type { ChartPoint, ChartZone } from '../../types/mood.types';
 import { ChartLegend, zoneColors } from './ChartLegend';
 import { chartSegments } from '../../utils/chart.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 import { formatDate } from '../../utils/date.util';
 export function CollectiveMoodChart({
   points,
@@ -16,6 +16,7 @@ export function CollectiveMoodChart({
   zones: ChartZone[];
   caption?: string;
 }) {
+  const { colors } = useAppTheme();
   const [selection, setSelection] = useState<number | null>(null);
   const selected = selection === null ? undefined : points[selection];
   const width = 390,
@@ -41,7 +42,7 @@ export function CollectiveMoodChart({
         }}
       >
         <Text style={{ fontSize: 12, fontFamily: 'Inter-Medium' }}>Humeur collective</Text>
-        <Text style={{ fontSize: 10, color: '#7F899A' }}>{caption}</Text>
+        <Text style={{ fontSize: 10, color: colors.muted }}>{caption}</Text>
       </View>
       <Svg
         width="100%"
@@ -56,7 +57,7 @@ export function CollectiveMoodChart({
             y={y(zone.max)}
             width={390}
             height={Math.max(0, y(zone.min) - y(zone.max))}
-            fill={zoneColors[zone.key].fill}
+            fill={zoneColors(colors)[zone.key].fill}
           />
         ))}
         {points.map((point, i) => (
@@ -66,7 +67,7 @@ export function CollectiveMoodChart({
             y1={top}
             x2={x(i)}
             y2={bottom}
-            stroke="#A3A8AD"
+            stroke={colors.muted}
             strokeOpacity={0.15}
             strokeDasharray="2 3"
           />
@@ -76,7 +77,7 @@ export function CollectiveMoodChart({
             key={score}
             x={375}
             y={y(score) + 4}
-            fill="#6E7887"
+            fill={colors.muted}
             fontSize={9}
             textAnchor="middle"
           >
@@ -103,7 +104,7 @@ export function CollectiveMoodChart({
                   r={2}
                   stroke={colors.chartLine}
                   strokeWidth={1}
-                  fill="#FFF"
+                  fill={colors.surface}
                 />
                 <Rect
                   x={x(i) - 6}
@@ -121,7 +122,7 @@ export function CollectiveMoodChart({
           <Circle cx={x(selection!)} cy={y(selected.score)} r={4} fill={colors.primary} />
         )}
         {ticks.map((i) => (
-          <SvgText key={i} x={x(i)} y={178} textAnchor="middle" fill="#6B7589" fontSize={9}>
+          <SvgText key={i} x={x(i)} y={178} textAnchor="middle" fill={colors.muted} fontSize={9}>
             {points[i]?.label}
           </SvgText>
         ))}

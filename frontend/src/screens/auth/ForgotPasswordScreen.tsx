@@ -11,10 +11,11 @@ import { TextLink } from '../../components/ui/TextLink';
 import { useForgotPasswordMutation } from '../../store/api/authApi';
 import { isEmail } from '../../utils/validators.util';
 import { errorMessage } from '../../services/api.client';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function ForgotPasswordScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>) {
+  const { colors } = useAppTheme();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');

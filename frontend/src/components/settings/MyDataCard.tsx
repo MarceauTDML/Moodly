@@ -10,10 +10,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { errorMessage } from '../../services/api.client';
 import { moodHistory } from '../../services/moodHistory.storage';
 import { useAppSelector } from '../../store';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 
 // Droits RGPD : portabilité (export) et effacement (suppression du compte).
 export function MyDataCard() {
+  const { colors } = useAppTheme();
   const { signOut } = useAuth();
   const userId = useAppSelector((s) => s.auth.session?.user.id);
   const [loadPersonalData, exportState] = useLazyPersonalDataQuery();

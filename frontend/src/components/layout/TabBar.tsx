@@ -3,8 +3,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Icon, type IconName } from '../ui/Icon';
 import { Text } from '../ui/Text';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { colors } = useAppTheme();
   const insets = useSafeAreaInsets();
   const icons: Record<string, IconName> = {
     MoodMap: 'smile',
@@ -15,16 +16,16 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     <View
       style={{
         flexDirection: 'row',
-        backgroundColor: '#FCFCFF',
+        backgroundColor: colors.tabBar,
         paddingTop: 8,
         paddingBottom: Math.max(insets.bottom, 12),
         borderTopWidth: 1,
-        borderTopColor: '#F3F0F8',
+        borderTopColor: colors.divider,
       }}
     >
       {state.routes.map((route, index) => {
         const selected = state.index === index;
-        const color = selected ? colors.primary : '#9299B5';
+        const color = selected ? colors.primary : colors.tabInactive;
         const options = descriptors[route.key]?.options;
         return (
           <Pressable

@@ -1,14 +1,14 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../ui/Text';
 import { IconButton } from '../ui/IconButton';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function AppHeader({
   title = 'Mood map',
   subtitle,
   onMenu,
   onBack,
-  color = colors.text,
-  muted = colors.muted,
+  color: colorProp,
+  muted: mutedProp,
 }: {
   title?: string;
   subtitle?: string;
@@ -17,6 +17,9 @@ export function AppHeader({
   color?: string;
   muted?: string;
 }) {
+  const { colors } = useAppTheme();
+  const color = colorProp ?? colors.text;
+  const muted = mutedProp ?? colors.muted;
   return (
     <View style={styles.header}>
       {onBack && <IconButton icon="back" label="Retour" onPress={onBack} color={color} />}

@@ -1,7 +1,8 @@
-import { Modal, ScrollView, View, StyleSheet } from 'react-native';
+import { Modal, ScrollView, View } from 'react-native';
 import { Text } from '../ui/Text';
 import { Button } from '../ui/Button';
 import type { MoodSubmission } from '../../types/checkin.types';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 
 export function MoodSubmittedModal({
   visible,
@@ -16,13 +17,15 @@ export function MoodSubmittedModal({
   suggestSupport?: boolean;
   onOpenSupport?: () => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View accessibilityViewIsModal style={styles.dialog}>
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.check}>
-              <Text accessible={false} style={{ fontSize: 33, color: '#42965D' }}>
+              <Text accessible={false} style={{ fontSize: 33, color: colors.success }}>
                 ✓
               </Text>
             </View>
@@ -48,20 +51,20 @@ export function MoodSubmittedModal({
     </Modal>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   overlay: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#18213766',
+    backgroundColor: colors.overlay,
   },
   dialog: {
     width: '100%',
     maxWidth: 370,
     maxHeight: '85%',
     borderRadius: 24,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     overflow: 'hidden',
   },
   content: { padding: 28, alignItems: 'center', gap: 18 },
@@ -71,16 +74,22 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E6F5EC',
+    backgroundColor: colors.successSoft,
   },
   title: {
     fontSize: 22,
     lineHeight: 28,
     textAlign: 'center',
-    color: '#202736',
+    color: colors.textStrong,
     fontFamily: 'Inter-Bold',
   },
-  message: { fontSize: 14, lineHeight: 23, textAlign: 'center', color: '#758095' },
-  support: { width: '100%', gap: 12, padding: 16, borderRadius: 16, backgroundColor: '#F3EFF9' },
-  supportText: { fontSize: 13, lineHeight: 20, color: '#202736' },
-});
+  message: { fontSize: 14, lineHeight: 23, textAlign: 'center', color: colors.muted },
+  support: {
+    width: '100%',
+    gap: 12,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+  },
+  supportText: { fontSize: 13, lineHeight: 20, color: colors.textStrong },
+}));

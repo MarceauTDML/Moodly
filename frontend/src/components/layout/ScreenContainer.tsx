@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { ScrollView, View, RefreshControl, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function ScreenContainer({
   children,
-  background = colors.background,
+  background: backgroundProp,
   onRefresh,
   refreshing = false,
 }: {
@@ -13,6 +13,8 @@ export function ScreenContainer({
   onRefresh?: () => void;
   refreshing?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const background = backgroundProp ?? colors.background;
   const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView

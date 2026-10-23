@@ -16,8 +16,9 @@ import { Text } from '../../components/ui/Text';
 import type { Granularity } from '../../types/mood.types';
 import { formatScore, formatTrend } from '../../utils/formatters.util';
 import { formatPeriod } from '../../utils/date.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function EvolutionScreen() {
+  const { colors, statusBarStyle } = useAppTheme();
   const teams = useTeam();
   const [granularity, setGranularity] = useState<Granularity>('day');
   const query = useEvolutionQuery(teams.team ? { teamId: teams.team.id, granularity } : skipToken);
@@ -32,7 +33,7 @@ export function EvolutionScreen() {
       onRefresh={teams.team ? () => void query.refetch() : undefined}
       refreshing={query.isFetching && Boolean(data)}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={statusBarStyle} />
       <AppHeader title="Évolution" subtitle="Prendre du recul, ensemble" />
       <TeamPicker />
       <View
@@ -41,7 +42,7 @@ export function EvolutionScreen() {
           gap: 6,
           margin: 24,
           padding: 5,
-          backgroundColor: '#E8E5F2',
+          backgroundColor: colors.primarySoft,
           borderRadius: 14,
         }}
       >
@@ -57,7 +58,7 @@ export function EvolutionScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 10,
-              backgroundColor: granularity === choice.key ? '#FFF' : 'transparent',
+              backgroundColor: granularity === choice.key ? colors.surface : 'transparent',
             }}
           >
             <Text

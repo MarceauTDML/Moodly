@@ -10,11 +10,12 @@ import { Button } from '../../components/ui/Button';
 import { useResetPasswordMutation } from '../../store/api/authApi';
 import { errorMessage } from '../../services/api.client';
 import { isStrongPassword, passwordHint } from '../../utils/validators.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function ResetPasswordScreen({
   route,
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'ResetPassword'>) {
+  const { colors } = useAppTheme();
   const [token, setToken] = useState(route.params?.token ?? '');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');

@@ -4,8 +4,9 @@ import { Modal } from '../ui/Modal';
 import { Text } from '../ui/Text';
 import { TextLink } from '../ui/TextLink';
 import { useTeam } from '../../hooks/useTeam';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function TeamPicker() {
+  const { colors } = useAppTheme();
   const { teams, team, select } = useTeam();
   const [open, setOpen] = useState(false);
   if (teams.length < 2) return null;
@@ -31,7 +32,7 @@ export function TeamPicker() {
                 padding: 18,
                 marginVertical: 4,
                 borderRadius: 12,
-                backgroundColor: t.id === team?.id ? '#E9E8FB' : '#FFFFFF',
+                backgroundColor: t.id === team?.id ? colors.primarySoft : colors.surface,
               }}
             >
               <Text style={{ color: t.id === team?.id ? colors.primary : colors.text }}>

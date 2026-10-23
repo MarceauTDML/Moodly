@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type {
   NativeStackNavigationProp,
@@ -22,11 +22,13 @@ import { EmptyState } from '../../components/shared/EmptyState';
 import { ErrorState } from '../../components/shared/ErrorState';
 import { useDailyCheckin } from '../../hooks/useDailyCheckin';
 import { useAuth } from '../../hooks/useAuth';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 
 export function DailyCheckinScreen({
   navigation,
 }: NativeStackScreenProps<EmployeeStackParamList, 'DailyCheckin'>) {
+  const { colors, statusBarStyle } = useAppTheme();
+  const styles = useStyles();
   const checkin = useDailyCheckin();
   const { signOut } = useAuth();
   const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -43,8 +45,12 @@ export function DailyCheckinScreen({
     }
   };
   return (
-    <ScreenContainer background="#F7F8FA" onRefresh={() => void refresh()} refreshing={refreshing}>
-      <StatusBar barStyle="dark-content" />
+    <ScreenContainer
+      background={colors.surfaceAlt}
+      onRefresh={() => void refresh()}
+      refreshing={refreshing}
+    >
+      <StatusBar barStyle={statusBarStyle} />
       <View style={styles.page}>
         <AppHeader subtitle="La question du jour" onMenu={() => setMenu(true)} />
         <View style={styles.card}>
@@ -55,7 +61,7 @@ export function DailyCheckinScreen({
           ) : checkin.submitted ? (
             <View style={{ gap: 14 }}>
               <View style={styles.received}>
-                <Text accessible={false} style={{ fontSize: 32, color: '#42965D' }}>
+                <Text accessible={false} style={{ fontSize: 32, color: colors.success }}>
                   ✓
                 </Text>
               </View>
@@ -195,29 +201,29 @@ export function DailyCheckinScreen({
     </ScreenContainer>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   page: { width: '100%', maxWidth: 480, alignSelf: 'center' },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     borderRadius: 20,
     marginTop: 18,
     padding: 24,
     gap: 22,
     borderWidth: 1,
-    borderColor: '#E8EAF0',
+    borderColor: colors.border,
     boxShadow: '0px 4px 14px rgba(24,33,55,0.04)',
   },
-  question: { color: '#202736', fontSize: 18, lineHeight: 26, fontFamily: 'Inter-Bold' },
-  label: { color: '#202736', fontSize: 12, lineHeight: 20, fontFamily: 'Inter-Medium' },
+  question: { color: colors.textStrong, fontSize: 18, lineHeight: 26, fontFamily: 'Inter-Bold' },
+  label: { color: colors.textStrong, fontSize: 12, lineHeight: 20, fontFamily: 'Inter-Medium' },
   hint: { color: colors.muted, fontSize: 11, lineHeight: 17 },
-  anonymity: { textAlign: 'center', color: '#758095', fontSize: 12, lineHeight: 18 },
+  anonymity: { textAlign: 'center', color: colors.muted, fontSize: 12, lineHeight: 18 },
   received: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#E6F5EC',
+    backgroundColor: colors.successSoft,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
   },
-});
+}));

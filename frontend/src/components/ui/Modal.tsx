@@ -2,7 +2,8 @@ import { Modal as NativeModal, View, Pressable, StyleSheet } from 'react-native'
 import type { ReactNode } from 'react';
 import { Text } from './Text';
 import { IconButton } from './IconButton';
-import { typography } from '../../theme/typography';
+import { useTypography } from '../../theme/typography';
+import { themedStyles } from '../../theme/ThemeProvider';
 export function Modal({
   visible,
   title,
@@ -14,6 +15,8 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const styles = useStyles();
+  const typography = useTypography();
   // Démonter la fenêtre avant qu'une navigation ne fige l'écran qui l'affichait.
   if (!visible) return null;
   return (
@@ -37,22 +40,22 @@ export function Modal({
     </NativeModal>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#18213766',
+    backgroundColor: colors.overlay,
     padding: 24,
   },
   content: {
     width: '100%',
     maxWidth: 430,
     maxHeight: '85%',
-    backgroundColor: '#F9F7FC',
+    backgroundColor: colors.surfaceAlt,
     borderRadius: 24,
     padding: 20,
     gap: 14,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-});
+}));

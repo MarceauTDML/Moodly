@@ -10,10 +10,11 @@ import {
   requestDevicePushToken,
 } from '../../services/pushNotifications.client';
 import { errorMessage } from '../../services/api.client';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 
 // Activation volontaire : l'autorisation n'est demandée qu'après un appui sur le bouton.
 export function PushDeviceCard({ pushEnabled }: { pushEnabled: boolean }) {
+  const { colors } = useAppTheme();
   const availability = pushAvailability();
   const [register, registerState] = useRegisterPushMutation();
   const [unregister, unregisterState] = useUnregisterPushMutation();

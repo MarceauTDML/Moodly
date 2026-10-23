@@ -7,7 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { Text } from '../../components/ui/Text';
 import { Button } from '../../components/ui/Button';
 import { useMoodOptionsQuery } from '../../store/api/moodsApi';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 
 const call = (phone: string) => void Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
 
@@ -15,6 +15,7 @@ const call = (phone: string) => void Linking.openURL(`tel:${phone.replace(/\s/g,
 export function SupportScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'Support'>) {
+  const { colors } = useAppTheme();
   const resources = useMoodOptionsQuery().currentData?.supportResources ?? [];
   return (
     <ScreenContainer>

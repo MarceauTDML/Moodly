@@ -1,6 +1,6 @@
-import { Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { Pressable, ActivityIndicator } from 'react-native';
 import { Text } from './Text';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 export function Button({
   title,
   onPress,
@@ -14,6 +14,8 @@ export function Button({
   disabled?: boolean;
   secondary?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -27,14 +29,14 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={secondary ? colors.primary : '#FFF'} />
+        <ActivityIndicator color={secondary ? colors.primary : colors.onPrimary} />
       ) : (
         <Text style={[styles.label, secondary && { color: colors.primary }]}>{title}</Text>
       )}
     </Pressable>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   button: {
     minHeight: 52,
     paddingHorizontal: 20,
@@ -43,6 +45,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  secondary: { backgroundColor: '#EAE9FA' },
-  label: { fontFamily: 'Inter-Medium', fontSize: 15, color: '#FFF' },
-});
+  secondary: { backgroundColor: colors.primarySoft },
+  label: { fontFamily: 'Inter-Medium', fontSize: 15, color: colors.onPrimary },
+}));

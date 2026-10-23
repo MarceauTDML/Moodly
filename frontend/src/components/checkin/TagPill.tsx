@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 import { Text } from '../ui/Text';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 
 export function TagPill({
   label,
@@ -13,6 +13,8 @@ export function TagPill({
   onPress: () => void;
   disabled?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -20,13 +22,16 @@ export function TagPill({
       accessibilityState={{ checked: selected, disabled: Boolean(disabled) }}
       onPress={onPress}
       disabled={disabled}
-      style={[styles.pill, selected && { backgroundColor: '#EAEDFF', borderColor: colors.primary }]}
+      style={[
+        styles.pill,
+        selected && { backgroundColor: colors.primarySoft, borderColor: colors.primary },
+      ]}
     >
       <Text style={[styles.label, selected && { color: colors.primary }]}>{label}</Text>
     </Pressable>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   pill: {
     flexGrow: 1,
     flexBasis: '46%',
@@ -35,9 +40,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#F2F3F6',
+    backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: '#E5E7EC',
+    borderColor: colors.border,
   },
-  label: { color: '#303848', fontSize: 11, fontFamily: 'Inter-Medium' },
-});
+  label: { color: colors.text, fontSize: 11, fontFamily: 'Inter-Medium' },
+}));

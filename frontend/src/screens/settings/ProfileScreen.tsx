@@ -19,10 +19,11 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import { errorMessage } from '../../services/api.client';
 import { isStrongPassword, passwordHint } from '../../utils/validators.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function ProfileScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'Profile'>) {
+  const { colors } = useAppTheme();
   const query = useProfileQuery();
   const profile = query.currentData;
   const [firstName, setFirstName] = useState('');

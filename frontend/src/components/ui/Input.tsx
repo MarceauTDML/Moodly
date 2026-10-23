@@ -1,12 +1,14 @@
-import { View, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import { View, TextInput, type TextInputProps } from 'react-native';
 import { Text } from './Text';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 export function Input({
   label,
   error,
   style,
   ...props
 }: TextInputProps & { label: string; error?: string }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
@@ -15,7 +17,7 @@ export function Input({
         autoCorrect={props.secureTextEntry ? false : undefined}
         {...props}
         accessibilityLabel={label}
-        placeholderTextColor="#969DB3"
+        placeholderTextColor={colors.placeholder}
         style={[styles.input, error && { borderColor: colors.danger }, style]}
       />
       {error && (
@@ -26,7 +28,7 @@ export function Input({
     </View>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   group: { gap: 8 },
   label: { fontFamily: 'Inter-Medium', fontSize: 13, color: colors.text },
   input: {
@@ -41,4 +43,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
   },
-});
+}));

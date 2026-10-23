@@ -16,10 +16,11 @@ import {
 } from '../../store/api/usersApi';
 import type { NotificationSettings } from '../../types/user.types';
 import { errorMessage } from '../../services/api.client';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function NotificationSettingsScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'Notifications'>) {
+  const { colors } = useAppTheme();
   const query = useNotificationSettingsQuery();
   const data = query.currentData;
   const [update, state] = useUpdateNotificationsMutation();
@@ -49,7 +50,7 @@ export function NotificationSettingsScreen({
         value={data?.[field] ?? false}
         onValueChange={(value) => void save(field, value)}
         disabled={state.isLoading || query.isFetching}
-        trackColor={{ false: '#D4D8E3', true: '#3445D5' }}
+        trackColor={{ false: colors.border, true: colors.primary }}
       />
     </View>
   );

@@ -13,8 +13,10 @@ import { Divider } from '../../components/ui/Divider';
 import { AnonymityBanner } from '../../components/shared/AnonymityBanner';
 import { useProfileQuery } from '../../store/api/usersApi';
 import { useAuth } from '../../hooks/useAuth';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { AppearanceCard } from '../../components/settings/AppearanceCard';
 export function SettingsScreen({ onBack }: { onBack?: () => void }) {
+  const { colors, statusBarStyle } = useAppTheme();
   const navigation =
     useNavigation<
       CompositeNavigationProp<
@@ -37,7 +39,7 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
   );
   return (
     <ScreenContainer>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={statusBarStyle} />
       <AppHeader
         title="Paramètres"
         subtitle={
@@ -50,7 +52,7 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
       <View style={{ padding: 24, gap: 22 }}>
         <Card>
           <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-            <View style={{ padding: 14, borderRadius: 22, backgroundColor: '#EBE8F7' }}>
+            <View style={{ padding: 14, borderRadius: 22, backgroundColor: colors.primarySoft }}>
               <Icon name="user" size={28} />
             </View>
             <View style={{ flex: 1, gap: 3 }}>
@@ -84,6 +86,7 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
           <Divider />
           {row('Besoin d’aide ?', 'info', () => navigation.navigate('Support'))}
         </Card>
+        <AppearanceCard />
         <Card>
           <Text style={{ fontFamily: 'Inter-Medium' }}>Un regard collectif</Text>
           <Text style={{ color: colors.muted, fontSize: 13 }}>

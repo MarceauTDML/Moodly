@@ -4,16 +4,18 @@ import type { RootStackParamList } from '../../navigation/navigation.types';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Text } from '../../components/ui/Text';
 import { Icon } from '../../components/ui/Icon';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function WelcomeScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'Welcome'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   return (
     <ScreenContainer>
       <View style={{ padding: 24, paddingTop: 42, gap: 36 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ backgroundColor: '#EAE6F7', padding: 10, borderRadius: 15 }}>
+          <View style={{ backgroundColor: colors.primarySoft, padding: 10, borderRadius: 15 }}>
             <Icon name="smile" size={28} />
           </View>
           <Text style={{ fontSize: 26 }}>Mood Map</Text>

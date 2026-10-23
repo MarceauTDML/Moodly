@@ -19,12 +19,14 @@ import {
 } from '../../store/api/collaboratorsApi';
 import { isEmail } from '../../utils/validators.util';
 import { errorMessage } from '../../services/api.client';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function CollaboratorFormScreen({
   route,
   navigation,
 }: NativeStackScreenProps<ManagerSettingsParamList, 'CollaboratorForm'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   const userId = route.params?.userId;
   const teams = useTeamsQuery();
   const user = useCollaboratorQuery(userId ?? '', { skip: !userId });
@@ -162,7 +164,7 @@ export function CollaboratorFormScreen({
                 gap: 14,
                 padding: 18,
                 borderRadius: 22,
-                backgroundColor: '#ECE7F7',
+                backgroundColor: colors.selected,
               }}
             >
               <Icon name="users" size={23} />
@@ -204,7 +206,7 @@ export function CollaboratorFormScreen({
                   }}
                   style={{
                     padding: 16,
-                    backgroundColor: teamId === t.id ? '#ECE7F7' : colors.input,
+                    backgroundColor: teamId === t.id ? colors.selected : colors.input,
                     borderRadius: 12,
                     marginBottom: 8,
                   }}

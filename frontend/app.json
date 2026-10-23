@@ -16,7 +16,7 @@
       "package": "com.moodly.manager",
       "permissions": []
     },
-    "plugins": ["expo-secure-store", "expo-font"],
+    "plugins": ["expo-secure-store", "expo-font", "expo-notifications"],
     "web": {
       "bundler": "metro",
       "name": "Mood map"

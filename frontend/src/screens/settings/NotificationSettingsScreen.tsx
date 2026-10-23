@@ -9,6 +9,7 @@ import { Text } from '../../components/ui/Text';
 import { Divider } from '../../components/ui/Divider';
 import { ErrorState } from '../../components/shared/ErrorState';
 import { LoadingOverlay } from '../../components/shared/LoadingOverlay';
+import { PushDeviceCard } from '../../components/settings/PushDeviceCard';
 import {
   useNotificationSettingsQuery,
   useUpdateNotificationsMutation,
@@ -70,14 +71,7 @@ export function NotificationSettingsScreen({
             Ces préférences sont enregistrées sur votre compte. Les envois dépendent des
             notifications prévues par le serveur pour votre rôle.
           </Text>
-          <Card>
-            <Text style={{ fontFamily: 'Inter-Medium' }}>Cet appareil</Text>
-            <Text style={{ color: colors.muted }}>
-              {data.pushEnabled
-                ? 'Un appareil est associé aux notifications push de votre compte.'
-                : 'Aucun appareil associé aux notifications push.'}
-            </Text>
-          </Card>
+          <PushDeviceCard pushEnabled={data.pushEnabled} />
           {message && (
             <Text accessibilityLiveRegion="polite" style={{ color: colors.success }}>
               {message}

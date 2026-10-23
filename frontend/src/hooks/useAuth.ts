@@ -13,6 +13,7 @@ import { ApiRequestError, errorMessage, requestApi } from '../services/api.clien
 import { profileSchema } from '../services/api.schemas';
 import { secureStorage } from '../services/secureStorage.client';
 import { refreshSession } from '../services/session.client';
+import { unregisterThisDevice } from '../services/pushNotifications.client';
 import type { LoginInput, Session } from '../types/auth.types';
 import type { Profile } from '../types/user.types';
 
@@ -75,7 +76,12 @@ export function useAuth() {
     dispatch(signedIn({ ...tokens, user: profile }));
     result.reset();
   };
-  const signOut = () => dispatch(signedOut());
+  const signOut = () => {
+    const session = auth.session;
+    dispatch(signedOut());
+    // Sans attendre : ce téléphone cesse de recevoir les rappels du compte qui se déconnecte.
+    if (session) void unregisterThisDevice(session).catch(() => undefined);
+  };
   const retryBootstrap = () => dispatch(bootstrapRetried());
   return { ...auth, signIn, signOut, retryBootstrap };
 }

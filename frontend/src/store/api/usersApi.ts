@@ -43,6 +43,19 @@ export const usersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Notifications'],
     }),
+    registerPush: build.mutation<NotificationSettings, { pushToken: string }>({
+      query: (body) => ({
+        url: '/users/me/push-token',
+        method: 'PUT',
+        body,
+        schema: notificationsSchema,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+    unregisterPush: build.mutation<void, { pushToken: string }>({
+      query: (body) => ({ url: '/users/me/push-token', method: 'DELETE', body }),
+      invalidatesTags: ['Notifications'],
+    }),
     teams: build.query<Team[], void>({
       query: () => ({ url: '/teams', schema: teamsSchema }),
       providesTags: ['Teams'],
@@ -58,4 +71,6 @@ export const {
   useTeamsQuery,
   useLazyPersonalDataQuery,
   useDeleteAccountMutation,
+  useRegisterPushMutation,
+  useUnregisterPushMutation,
 } = usersApi;

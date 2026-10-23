@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { EmployeeStackParamList } from '../../navigation/navigation.types';
+import { useNavigation } from '@react-navigation/native';
+import type {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+import type { EmployeeStackParamList, RootStackParamList } from '../../navigation/navigation.types';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { ScreenContainer } from '../../components/layout/ScreenContainer';
 import { Button } from '../../components/ui/Button';
@@ -25,6 +29,7 @@ export function DailyCheckinScreen({
 }: NativeStackScreenProps<EmployeeStackParamList, 'DailyCheckin'>) {
   const checkin = useDailyCheckin();
   const { signOut } = useAuth();
+  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [menu, setMenu] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const data = checkin.options.currentData;
@@ -144,6 +149,11 @@ export function DailyCheckinScreen({
         visible={checkin.modalVisible}
         result={checkin.confirmation}
         onClose={checkin.closeConfirmation}
+        suggestSupport={checkin.supportSuggested}
+        onOpenSupport={() => {
+          checkin.closeConfirmation();
+          rootNavigation.navigate('Support');
+        }}
       />
       <Modal visible={menu} title="Mon espace" onClose={() => setMenu(false)}>
         <TextLink
@@ -158,6 +168,13 @@ export function DailyCheckinScreen({
           onPress={() => {
             setMenu(false);
             navigation.navigate('MyHistory');
+          }}
+        />
+        <TextLink
+          title="Besoin d’aide ?"
+          onPress={() => {
+            setMenu(false);
+            rootNavigation.navigate('Support');
           }}
         />
         <TextLink

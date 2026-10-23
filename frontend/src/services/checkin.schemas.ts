@@ -20,6 +20,18 @@ export const moodOptionsSchema = z.object({
     )
     .length(4),
   tags: z.array(z.object({ id: z.string(), code: checkinTagSchema, label: z.string() })).max(6),
+  // Contacts d'aide propres à l'entreprise (SUPPORT_RESOURCES côté serveur).
+  supportResources: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        description: z.string().optional(),
+        phone: z.string().optional(),
+        url: z.url({ protocol: /^https$/ }).optional(),
+      }),
+    )
+    .max(5)
+    .default([]),
 });
 export const todayCheckinSchema = z.object({
   date: z.iso.date(),

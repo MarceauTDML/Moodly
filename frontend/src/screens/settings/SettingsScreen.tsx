@@ -81,6 +81,8 @@ export function SettingsScreen({ onBack }: { onBack?: () => void }) {
           {row('Mon profil et mon mot de passe', 'user', () => navigation.navigate('Profile'))}
           <Divider />
           {row('Préférences de notification', 'bell', () => navigation.navigate('Notifications'))}
+          <Divider />
+          {row('Besoin d’aide ?', 'info', () => navigation.navigate('Support'))}
         </Card>
         <Card>
           <Text style={{ fontFamily: 'Inter-Medium' }}>Un regard collectif</Text>

@@ -71,6 +71,18 @@ Le dernier administrateur d’une entreprise ne peut pas supprimer son compte ta
 
 Le collaborateur retrouve ses 30 derniers jours dans **Mon espace → Mon historique**. Cet historique est enregistré **uniquement sur son téléphone**, dans le stockage chiffré (SecureStore), au moment où il envoie son mood : le serveur ne reçoit rien de plus et ne peut toujours pas relier une réponse à son auteur. Il conserve 12 mois, sans les commentaires, et reste séparé pour chaque compte utilisé sur le téléphone. Il est ajouté à l’export des données, effacé avec le compte, et peut être effacé à tout moment. Sur le web, rien n’est conservé.
 
+## Ressources d’aide
+
+L’écran **Besoin d’aide ?** est accessible à tous depuis les Paramètres, et depuis le menu du collaborateur. Il présente le 3114 (numéro national de prévention du suicide), la santé au travail et, si vous les renseignez, les contacts propres à l’entreprise dans `backend/.env` :
+
+```dotenv
+SUPPORT_RESOURCES=[{"label":"Psychologue d'entreprise","phone":"01 23 45 67 89","description":"Consultation confidentielle"}]
+```
+
+Chaque contact accepte `label`, `description`, `phone` et `url` (HTTPS uniquement), cinq au maximum. Une valeur invalide empêche le serveur de démarrer, avec un message explicite.
+
+Après un vote, si au moins 3 des 5 derniers votes des 14 derniers jours sont « Stressé », la confirmation propose d’ouvrir ces ressources. Ce calcul utilise l’historique enregistré sur le téléphone : rien n’est envoyé au serveur, et l’application n’enregistre ni l’affichage de la proposition ni les appels. Ce n’est pas un diagnostic, seulement une invitation.
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.

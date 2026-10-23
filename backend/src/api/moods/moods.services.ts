@@ -1,4 +1,5 @@
 import { MoodLevel, Prisma } from '@prisma/client';
+import { env } from '../../config/env.config';
 import { MOOD_LABELS, MOOD_SCORES } from '../../config/mood.config';
 import type { AuthUser } from '../../types/auth.types';
 import { formatDay, today } from '../../utils/date.util';
@@ -15,6 +16,7 @@ export const moodsService = {
       commentPlaceholder: 'Ajoute un détail si tu veux…',
       moods: Object.values(MoodLevel).map((code) => ({ code, label: MOOD_LABELS[code], score: MOOD_SCORES[code] })),
       tags: await tagsRepo.findAll(),
+      supportResources: env.SUPPORT_RESOURCES,
     };
   },
 

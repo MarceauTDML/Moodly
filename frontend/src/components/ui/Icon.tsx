@@ -21,7 +21,9 @@ export type IconName =
   | 'logout'
   | 'refresh'
   | 'close'
-  | 'info';
+  | 'info'
+  | 'eye'
+  | 'eye-off';
 export function Icon({
   name,
   color,
@@ -53,6 +55,9 @@ export function Icon({
     logout: 'M9 4H4V20H9 M12 12H22 M18 8L22 12L18 16',
     refresh: 'M20 10A8 8 0 1 0 19 17 M20 4V10H14',
     info: 'M12 10V17 M12 7V7.1',
+    eye: 'M2 12C5 6.5 8.5 4.5 12 4.5S19 6.5 22 12C19 17.5 15.5 19.5 12 19.5S5 17.5 2 12Z',
+    'eye-off':
+      'M2 12C5 6.5 8.5 4.5 12 4.5S19 6.5 22 12C19 17.5 15.5 19.5 12 19.5S5 17.5 2 12Z M4 4L20 20',
     settings:
       'M9 3L8 6L5 7L3 10L5 12L3 15L5 18L8 19L9 22H14L15 19L19 18L21 15L19 12L21 9L19 6L15 5L14 2Z',
   };
@@ -78,6 +83,7 @@ export function Icon({
       {name === 'lock' && <Rect x={5} y={11} width={14} height={11} rx={2} />}
       {name === 'settings' && <Circle cx={12} cy={12} r={3} />}
       {name === 'info' && <Circle cx={12} cy={12} r={10} />}
+      {(name === 'eye' || name === 'eye-off') && <Circle cx={12} cy={12} r={3} />}
     </Svg>
   );
 }

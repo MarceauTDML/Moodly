@@ -72,6 +72,10 @@ export async function requestApi<T>(path: string, options: RequestOptions<T> = {
         TEAM_NOT_FOUND: 'Cette équipe n’est pas accessible. Choisissez une de vos équipes.',
         MULTIPLE_TEAMS: 'Ce compte appartient à plusieurs équipes. Contactez votre administrateur.',
         INVALID_PASSWORD: 'Mot de passe incorrect.',
+        INVALID_TWO_FACTOR_CODE: 'Code incorrect ou expiré.',
+        TWO_FACTOR_LOCKED: 'Trop de codes incorrects. Réessayez dans 15 minutes.',
+        TWO_FACTOR_ALREADY_ENABLED: 'La double authentification est déjà activée.',
+        MAIL_UNAVAILABLE: 'L’envoi d’e-mails n’est pas configuré sur le serveur.',
         LAST_ADMIN:
           'Vous êtes le dernier administrateur de l’entreprise. Nommez-en un autre avant de supprimer votre compte.',
         ACTIVE_EMAIL_CHANGE: 'L’adresse d’un compte actif ne peut pas être modifiée ici.',

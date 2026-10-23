@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { env } from '../config/env.config';
+import { env, isProd } from '../config/env.config';
 import { logger } from '../config/logger.config';
 import { isMailerConfigured, mailFrom, mailTransport } from '../config/mailer.config';
 
-type TemplateName = 'invitation' | 'welcome' | 'reset-password' | 'daily-reminder';
+type TemplateName = 'invitation' | 'welcome' | 'reset-password' | 'daily-reminder' | 'two-factor-code';
 
 const TEMPLATE_DIR = path.join(__dirname, '..', 'templates', 'emails');
 const cache = new Map<TemplateName, string>();
@@ -77,6 +77,13 @@ export const emailService = {
         ttl: String(env.RESET_TOKEN_TTL_MINUTES),
       }),
     ),
+
+  sendTwoFactorCode: async (to: string, firstName: string, code: string) => {
+    // En développement sans SMTP, le code n'est jamais reçu : il est affiché dans les logs.
+    if (!isMailerConfigured && !isProd)
+      logger.warn({ to, code }, 'Code de vérification (développement, SMTP non configuré)');
+    await send(to, `Votre code Mood Map : ${code}`, render('two-factor-code', { firstName, code }), true);
+  },
 
   sendDailyReminder: (to: string, firstName: string) =>
     send(

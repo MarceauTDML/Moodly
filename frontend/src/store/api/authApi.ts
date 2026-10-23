@@ -1,16 +1,28 @@
 import { baseApi } from './baseApi';
-import { loginSchema } from '../../services/api.schemas';
-import type { LoginInput, LoginResponse } from '../../types/auth.types';
+import { loginResultSchema, loginSchema } from '../../services/api.schemas';
+import type { LoginInput, LoginResponse, TwoFactorChallenge } from '../../types/auth.types';
 export const authApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    login: build.mutation<LoginResponse, LoginInput>({
+    login: build.mutation<LoginResponse | TwoFactorChallenge, LoginInput>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body,
         public: true,
+        schema: loginResultSchema,
+      }),
+    }),
+    verifyTwoFactor: build.mutation<LoginResponse, { challengeToken: string; code: string }>({
+      query: (body) => ({
+        url: '/auth/2fa/verify',
+        method: 'POST',
+        body,
+        public: true,
         schema: loginSchema,
       }),
+    }),
+    resendTwoFactorCode: build.mutation<{ message: string }, { challengeToken: string }>({
+      query: (body) => ({ url: '/auth/2fa/resend', method: 'POST', body, public: true }),
     }),
     activateAccount: build.mutation<{ message: string }, { token: string; password: string }>({
       query: (body) => ({ url: '/auth/activate', method: 'POST', body, public: true }),
@@ -25,6 +37,8 @@ export const authApi = baseApi.injectEndpoints({
 });
 export const {
   useLoginMutation,
+  useVerifyTwoFactorMutation,
+  useResendTwoFactorCodeMutation,
   useActivateAccountMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,

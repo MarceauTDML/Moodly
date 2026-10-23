@@ -48,6 +48,8 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+  // Clé de chiffrement des secrets de double authentification (dérivée de JWT_REFRESH_SECRET si absente).
+  TWO_FACTOR_SECRET_KEY: z.string().min(32).optional(),
 
   RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(30),
   APP_URL: z.string().default('moodmap://'),

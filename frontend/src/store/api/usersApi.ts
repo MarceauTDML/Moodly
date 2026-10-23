@@ -4,9 +4,18 @@ import {
   notificationsSchema,
   teamsSchema,
   personalDataSchema,
+  twoFactorStatusSchema,
+  twoFactorSetupSchema,
+  twoFactorConfirmSchema,
 } from '../../services/api.schemas';
 import type { NotificationSettings, PersonalData, Profile } from '../../types/user.types';
 import type { Team } from '../../types/team.types';
+import type {
+  TwoFactorConfirmation,
+  TwoFactorMethod,
+  TwoFactorSetup,
+  TwoFactorStatus,
+} from '../../types/auth.types';
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     profile: build.query<Profile, void>({
@@ -56,6 +65,31 @@ export const usersApi = baseApi.injectEndpoints({
       query: (body) => ({ url: '/users/me/push-token', method: 'DELETE', body }),
       invalidatesTags: ['Notifications'],
     }),
+    twoFactorStatus: build.query<TwoFactorStatus, void>({
+      query: () => ({ url: '/users/me/2fa', schema: twoFactorStatusSchema }),
+      providesTags: ['TwoFactor'],
+    }),
+    setupTwoFactor: build.mutation<TwoFactorSetup, { method: TwoFactorMethod }>({
+      query: (body) => ({
+        url: '/users/me/2fa/setup',
+        method: 'POST',
+        body,
+        schema: twoFactorSetupSchema,
+      }),
+    }),
+    confirmTwoFactor: build.mutation<TwoFactorConfirmation, { code: string }>({
+      query: (body) => ({
+        url: '/users/me/2fa/confirm',
+        method: 'POST',
+        body,
+        schema: twoFactorConfirmSchema,
+      }),
+      invalidatesTags: ['TwoFactor'],
+    }),
+    disableTwoFactor: build.mutation<void, { password: string }>({
+      query: (body) => ({ url: '/users/me/2fa', method: 'DELETE', body }),
+      invalidatesTags: ['TwoFactor'],
+    }),
     teams: build.query<Team[], void>({
       query: () => ({ url: '/teams', schema: teamsSchema }),
       providesTags: ['Teams'],
@@ -73,4 +107,8 @@ export const {
   useDeleteAccountMutation,
   useRegisterPushMutation,
   useUnregisterPushMutation,
+  useTwoFactorStatusQuery,
+  useSetupTwoFactorMutation,
+  useConfirmTwoFactorMutation,
+  useDisableTwoFactorMutation,
 } = usersApi;

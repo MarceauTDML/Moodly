@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { TextArea } from '../ui/TextArea';
 import { Text } from '../ui/Text';
 import { COMMENT_MAX_LENGTH } from '../../services/checkin.schemas';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 
 export function OptionalCommentInput({
   value,
@@ -15,6 +15,7 @@ export function OptionalCommentInput({
   placeholder: string;
   disabled?: boolean;
 }) {
+  const { colors } = useAppTheme();
   return (
     <View style={{ gap: 2 }}>
       <TextArea

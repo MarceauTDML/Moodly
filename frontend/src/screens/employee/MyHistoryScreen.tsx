@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { EmployeeStackParamList } from '../../navigation/navigation.types';
@@ -14,7 +14,7 @@ import { useMoodOptionsQuery } from '../../store/api/moodsApi';
 import { useAppSelector } from '../../store';
 import { moodHistory } from '../../services/moodHistory.storage';
 import { lastDays, localDate, type HistoryEntry } from '../../utils/moodHistory.util';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 
 const DAYS = 30;
 
@@ -22,6 +22,8 @@ const DAYS = 30;
 export function MyHistoryScreen({
   navigation,
 }: NativeStackScreenProps<EmployeeStackParamList, 'MyHistory'>) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const userId = useAppSelector((s) => s.auth.session?.user.id);
   const options = useMoodOptionsQuery().currentData;
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
@@ -126,9 +128,9 @@ export function MyHistoryScreen({
     </ScreenContainer>
   );
 }
-const styles = StyleSheet.create({
+const useStyles = themedStyles((colors) => ({
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 },
   cell: { width: `${100 / 6}%`, alignItems: 'center', gap: 2 },
-  empty: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: '#E8EAF0' },
+  empty: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border },
   day: { color: colors.muted, fontSize: 10 },
-});
+}));

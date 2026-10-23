@@ -1,4 +1,5 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export type IconName =
   | 'users'
   | 'mail'
@@ -23,13 +24,14 @@ export type IconName =
   | 'info';
 export function Icon({
   name,
-  color = '#3445D5',
+  color,
   size = 24,
 }: {
   name: IconName;
   color?: string;
   size?: number;
 }) {
+  const { colors } = useAppTheme();
   const paths: Partial<Record<IconName, string>> = {
     users:
       'M3 21V19A6 6 0 0 1 15 19V21 M13 3A4 4 0 0 1 13 11 M17 13A6 6 0 0 1 21 19V21 M12 7A4 4 0 1 1 4 7A4 4 0 0 1 12 7',
@@ -60,7 +62,7 @@ export function Icon({
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={color}
+      stroke={color ?? colors.primary}
       strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"

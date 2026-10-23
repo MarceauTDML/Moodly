@@ -1,6 +1,6 @@
 import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from './Text';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function TextLink({
   title,
   onPress,
@@ -10,6 +10,7 @@ export function TextLink({
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
+  const { colors } = useAppTheme();
   return (
     <Pressable
       onPress={onPress}

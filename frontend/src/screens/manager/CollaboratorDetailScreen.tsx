@@ -18,12 +18,14 @@ import {
   useInviteCollaboratorMutation,
 } from '../../store/api/collaboratorsApi';
 import { errorMessage } from '../../services/api.client';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function CollaboratorDetailScreen({
   route,
   navigation,
 }: NativeStackScreenProps<ManagerSettingsParamList, 'CollaboratorDetail'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   const query = useCollaboratorQuery(route.params.userId, { refetchOnMountOrArgChange: true });
   useFocusEffect(
     useCallback(() => {
@@ -57,7 +59,7 @@ export function CollaboratorDetailScreen({
                 width: 82,
                 height: 82,
                 borderRadius: 41,
-                backgroundColor: '#E3DAF5',
+                backgroundColor: colors.selected,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
@@ -107,7 +109,7 @@ export function CollaboratorDetailScreen({
                   gap: 14,
                   padding: 18,
                   borderRadius: 22,
-                  backgroundColor: '#ECE7F7',
+                  backgroundColor: colors.selected,
                 }}
               >
                 <Icon name="key" size={24} />

@@ -1,9 +1,11 @@
 import Svg, { Circle, Ellipse, Path, G, Line } from 'react-native-svg';
 import type { MoodStatus } from '../../types/mood.types';
 import { moodStatusColors } from '../../theme/moodStatusColors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 // Illustration vectorielle : elle reste nette sur tous les ecrans.
 export function MoodMascot({ status }: { status: MoodStatus }) {
-  const palette = moodStatusColors[status];
+  const { scheme } = useAppTheme();
+  const palette = moodStatusColors[scheme][status];
   const perfect = status === 'PARFAIT';
   const worried = status === 'PREOCCUPANT';
   return (

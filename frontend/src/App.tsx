@@ -6,19 +6,19 @@ import { store } from './store';
 import { RootNavigator } from './navigation/RootNavigator';
 import { useSessionBootstrap } from './hooks/useAuth';
 import { LoadingOverlay } from './components/shared/LoadingOverlay';
-import { ThemeProvider } from './theme/ThemeProvider';
-import { colors } from './theme/colors';
+import { ThemeProvider, useAppTheme } from './theme/ThemeProvider';
 function Application() {
   useSessionBootstrap();
+  const { colors, statusBarStyle } = useAppTheme();
   const [loaded, error] = useFonts({
     'Inter-Regular': require('../assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
     'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
   });
   return (
-    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#E7E9F1' }}>
+    <View style={{ flex: 1, alignItems: 'center', backgroundColor: colors.backdrop }}>
       <View style={{ flex: 1, width: '100%', maxWidth: 480, backgroundColor: colors.background }}>
-        <StatusBar barStyle="dark-content" />
+        <StatusBar barStyle={statusBarStyle} />
         {loaded || error ? <RootNavigator /> : <LoadingOverlay />}
       </View>
     </View>
@@ -28,7 +28,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <ThemeProvider value={colors}>
+        <ThemeProvider>
           <Application />
         </ThemeProvider>
       </SafeAreaProvider>

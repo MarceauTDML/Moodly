@@ -99,6 +99,12 @@ Deux étapes sont nécessaires pour recevoir de vraies notifications :
 
 2. **Sur Android, utiliser une version de développement** : depuis le SDK 53, Expo Go ne reçoit plus les notifications à distance. Par exemple `npx expo run:android` (Android Studio requis) ou un build EAS. L’application l’indique dans l’écran des préférences.
 
+## Mode sombre
+
+Dans **Paramètres → Apparence**, chaque utilisateur choisit Système, Clair ou Sombre. Le choix est mémorisé sur le téléphone ; « Système » suit le réglage de l’appareil.
+
+Les composants ne contiennent plus de code couleur : ils lisent une palette sémantique (`frontend/src/theme/colors.ts`) via `useAppTheme()`, et leurs styles sont créés par `themedStyles()`. Seules les illustrations (visages, mascotte, teintes des humeurs) gardent leurs couleurs, avec une variante sombre. Un test vérifie que les deux palettes respectent les contrastes WCAG (4,5:1 pour le texte, 3:1 pour le texte secondaire et les éléments graphiques).
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.

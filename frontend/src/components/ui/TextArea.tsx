@@ -1,6 +1,6 @@
-import { TextInput, StyleSheet, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { Text } from './Text';
-import { colors } from '../../theme/colors';
+import { themedStyles, useAppTheme } from '../../theme/ThemeProvider';
 
 export function TextArea({
   label,
@@ -17,6 +17,8 @@ export function TextArea({
   maxLength: number;
   disabled?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={{ gap: 8 }}>
       <Text style={styles.label}>{label}</Text>
@@ -25,7 +27,7 @@ export function TextArea({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#758095"
+        placeholderTextColor={colors.placeholder}
         maxLength={maxLength}
         multiline
         textAlignVertical="top"
@@ -38,13 +40,13 @@ export function TextArea({
     </View>
   );
 }
-const styles = StyleSheet.create({
-  label: { fontFamily: 'Inter-Medium', fontSize: 12, lineHeight: 20, color: '#202736' },
+const useStyles = themedStyles((colors) => ({
+  label: { fontFamily: 'Inter-Medium', fontSize: 12, lineHeight: 20, color: colors.textStrong },
   input: {
     minHeight: 100,
-    backgroundColor: '#F2F3F6',
+    backgroundColor: colors.surfaceAlt,
     borderWidth: 1,
-    borderColor: '#E5E7EC',
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 14,
     color: colors.text,
@@ -52,4 +54,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   count: { color: colors.muted, textAlign: 'right', fontSize: 11 },
-});
+}));

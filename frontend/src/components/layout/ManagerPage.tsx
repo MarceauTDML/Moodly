@@ -6,6 +6,7 @@ import { ScreenContainer } from './ScreenContainer';
 import { AppHeader } from './AppHeader';
 import { TextLink } from '../ui/TextLink';
 import { Modal } from '../ui/Modal';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function ManagerPage({
   backLabel,
   onBack,
@@ -19,11 +20,12 @@ export function ManagerPage({
   onRefresh?: () => void;
   refreshing?: boolean;
 }) {
+  const { colors } = useAppTheme();
   const [menu, setMenu] = useState(false);
   const navigation = useNavigation<NavigationProp<ManagerTabsParamList>>();
   return (
     <ScreenContainer onRefresh={onRefresh} refreshing={refreshing}>
-      <View style={{ backgroundColor: '#ECE7F7', paddingBottom: 8 }}>
+      <View style={{ backgroundColor: colors.selected, paddingBottom: 8 }}>
         <AppHeader subtitle="Espace manager" onMenu={() => setMenu(true)} />
       </View>
       <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>

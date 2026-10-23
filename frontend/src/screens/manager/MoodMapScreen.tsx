@@ -19,16 +19,18 @@ import { LastUpdatedTag } from '../../components/moodmap/LastUpdatedTag';
 import { CollectiveMoodChart } from '../../components/moodmap/CollectiveMoodChart';
 import { TeamTrendsCard } from '../../components/moodmap/TeamTrendsCard';
 import { moodStatusColors } from '../../theme/moodStatusColors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 import { useMoodMap } from '../../hooks/useMoodMap';
 import { useAuth } from '../../hooks/useAuth';
 export function MoodMapScreen() {
+  const { scheme, statusBarStyle } = useAppTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { teams, summary, history, refresh } = useMoodMap();
   const { signOut } = useAuth();
   const [menu, setMenu] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const data = summary.currentData;
-  const palette = moodStatusColors[data?.status ?? 'PARFAIT'];
+  const palette = moodStatusColors[scheme][data?.status ?? 'PARFAIT'];
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -44,7 +46,7 @@ export function MoodMapScreen() {
       onRefresh={() => void onRefresh()}
       refreshing={refreshing}
     >
-      <StatusBar barStyle={data?.status === 'PREOCCUPANT' ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={data?.status === 'PREOCCUPANT' ? 'light-content' : statusBarStyle} />
       <View style={{ backgroundColor: palette.hero }}>
         <AppHeader
           subtitle="Les collaborateurs"

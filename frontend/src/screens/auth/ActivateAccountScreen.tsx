@@ -11,12 +11,14 @@ import { Icon } from '../../components/ui/Icon';
 import { useActivateAccountMutation } from '../../store/api/authApi';
 import { errorMessage } from '../../services/api.client';
 import { isStrongPassword, passwordHint } from '../../utils/validators.util';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function ActivateAccountScreen({
   route,
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'ActivateAccount'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   const token = route.params?.token ?? '';
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');

@@ -13,11 +13,13 @@ import { LoadingOverlay } from '../../components/shared/LoadingOverlay';
 import { ErrorState } from '../../components/shared/ErrorState';
 import { EmptyState } from '../../components/shared/EmptyState';
 import { useCollaboratorsQuery } from '../../store/api/collaboratorsApi';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function CollaboratorsScreen({
   navigation,
 }: NativeStackScreenProps<ManagerSettingsParamList, 'Collaborators'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   const query = useCollaboratorsQuery(undefined, { refetchOnMountOrArgChange: true });
   useFocusEffect(
     useCallback(() => {
@@ -90,10 +92,15 @@ export function CollaboratorsScreen({
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: 22,
-                  backgroundColor: filter === item.key ? '#24275D' : '#ECE7F7',
+                  backgroundColor: filter === item.key ? colors.primary : colors.selected,
                 }}
               >
-                <Text style={{ fontSize: 11, color: filter === item.key ? '#FFF' : colors.text }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: filter === item.key ? colors.onPrimary : colors.text,
+                  }}
+                >
                   {item.label} · {item.count}
                 </Text>
               </Pressable>
@@ -136,7 +143,12 @@ export function CollaboratorsScreen({
                       borderRadius: 24,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: ['#DFE9F5', '#E3DAF5', '#F5E2D8', '#E6F0E8'][i % 4],
+                      backgroundColor: [
+                        colors.primarySoft,
+                        colors.selected,
+                        colors.warningSoft,
+                        colors.successSoft,
+                      ][i % 4],
                     }}
                   >
                     <Text style={{ fontSize: 17 }}>

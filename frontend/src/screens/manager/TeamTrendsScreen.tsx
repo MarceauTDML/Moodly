@@ -14,10 +14,11 @@ import { Card } from '../../components/ui/Card';
 import { Text } from '../../components/ui/Text';
 import { formatNumber, formatScore } from '../../utils/formatters.util';
 import { formatPeriod } from '../../utils/date.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function TeamTrendsScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'TeamTrends'>) {
+  const { colors } = useAppTheme();
   const teams = useTeam();
   const query = useTrendsQuery(teams.team?.id ?? skipToken);
   const data = query.currentData;
@@ -109,7 +110,10 @@ export function TeamTrendsScreen({
               permettre d'identifier quelqu'un : gardez ces retours confidentiels.
             </Text>
             {data.comments.map((comment, i) => (
-              <View key={i} style={{ backgroundColor: '#F4F2FA', borderRadius: 12, padding: 14 }}>
+              <View
+                key={i}
+                style={{ backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 14 }}
+              >
                 <Text>« {comment} »</Text>
               </View>
             ))}

@@ -11,12 +11,14 @@ import { Icon } from '../../components/ui/Icon';
 import { useAuth } from '../../hooks/useAuth';
 import { errorMessage } from '../../services/api.client';
 import { isEmail } from '../../utils/validators.util';
-import { typography } from '../../theme/typography';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
+import { useTypography } from '../../theme/typography';
 export function LoginScreen({
   navigation,
   route,
 }: NativeStackScreenProps<RootStackParamList, 'Login'>) {
+  const { colors } = useAppTheme();
+  const typography = useTypography();
   const portal = route.params?.portal ?? 'employee';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,7 +47,7 @@ export function LoginScreen({
     <ScreenContainer>
       <View style={{ padding: 24, paddingTop: 42, gap: 38 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ backgroundColor: '#EAE6F7', padding: 9, borderRadius: 15 }}>
+          <View style={{ backgroundColor: colors.primarySoft, padding: 9, borderRadius: 15 }}>
             <Icon name="smile" size={25} />
           </View>
           <Text style={{ fontSize: 23 }}>Mood Map</Text>

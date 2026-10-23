@@ -4,7 +4,7 @@ import { Text } from '../ui/Text';
 import { Icon } from '../ui/Icon';
 import type { MoodMapSummary } from '../../types/mood.types';
 import { formatTrend } from '../../utils/formatters.util';
-import { colors } from '../../theme/colors';
+import { useAppTheme } from '../../theme/ThemeProvider';
 export function TeamTrendsCard({
   summary,
   onMore,
@@ -12,12 +12,13 @@ export function TeamTrendsCard({
   summary: MoodMapSummary;
   onMore: () => void;
 }) {
+  const { colors } = useAppTheme();
   const positive = (summary.trend?.points ?? 0) >= 0;
   const trendColor = positive
-    ? '#568568'
+    ? colors.success
     : summary.status === 'PREOCCUPANT'
-      ? '#C16475'
-      : '#CD893C';
+      ? colors.danger
+      : colors.warning;
   // Marie affiche un pourcentage pour l'etat parfait, des points sinon.
   const percent = summary.status === 'PARFAIT';
   return (
@@ -44,7 +45,13 @@ export function TeamTrendsCard({
           </Text>
         </View>
         <View
-          style={{ flex: 1, borderLeftWidth: 1, borderColor: '#E9EAF1', paddingLeft: 20, gap: 4 }}
+          style={{
+            flex: 1,
+            borderLeftWidth: 1,
+            borderColor: colors.divider,
+            paddingLeft: 20,
+            gap: 4,
+          }}
         >
           <Text
             style={{ fontFamily: 'Inter-Medium', fontSize: 22, lineHeight: 30, color: trendColor }}

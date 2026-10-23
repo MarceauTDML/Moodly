@@ -1,5 +1,6 @@
 import { Text as NativeText, type TextProps } from 'react-native';
-import { typography } from '../../theme/typography';
+import { useTypography } from '../../theme/typography';
 export function Text({ style, ...props }: TextProps) {
+  const typography = useTypography();
   return <NativeText {...props} style={[typography.body, style]} />;
 }

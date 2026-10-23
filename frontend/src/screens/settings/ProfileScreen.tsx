@@ -10,6 +10,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { ErrorState } from '../../components/shared/ErrorState';
 import { LoadingOverlay } from '../../components/shared/LoadingOverlay';
+import { MyDataCard } from '../../components/settings/MyDataCard';
 import {
   useProfileQuery,
   useUpdateProfileMutation,
@@ -172,6 +173,7 @@ export function ProfileScreen({
               </>
             )}
           </Card>
+          <MyDataCard />
         </View>
       )}
     </ScreenContainer>

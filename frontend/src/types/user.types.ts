@@ -17,3 +17,9 @@ export interface NotificationSettings {
   emailNotificationsEnabled: boolean;
   pushEnabled: boolean;
 }
+// Export RGPD renvoyé par GET /users/me/export.
+export interface PersonalData {
+  exportedAt: string;
+  account: { email: string; [key: string]: unknown };
+  [key: string]: unknown;
+}

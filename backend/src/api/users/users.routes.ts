@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.middleware';
+import { authLimiter } from '../../middlewares/rateLimiter.middleware';
 import { requireRole } from '../../middlewares/role.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { usersController } from './users.controllers';
@@ -7,6 +8,7 @@ import {
   collaboratorSchema,
   updateCollaboratorSchema,
   changePasswordSchema,
+  deleteMeSchema,
   createUserSchema,
   listUsersQuerySchema,
   notificationSettingsSchema,
@@ -27,6 +29,13 @@ usersRoutes.patch(
   validate({ body: changePasswordSchema }),
   usersController.changePassword,
 );
+usersRoutes.delete(
+  '/me',
+  authLimiter,
+  validate({ body: deleteMeSchema }),
+  usersController.deleteMe,
+);
+usersRoutes.get('/me/export', usersController.exportMe);
 usersRoutes.get('/me/notifications', usersController.getNotifications);
 usersRoutes.patch(
   '/me/notifications',

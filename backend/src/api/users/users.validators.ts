@@ -31,6 +31,11 @@ export const updateMeSchema = z
     error: 'Aucune donnée à mettre à jour',
   });
 
+// Le mot de passe confirme une action irréversible, même avec une session ouverte.
+export const deleteMeSchema = z.object({
+  password: z.string().min(1).max(128),
+});
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1).max(128),
@@ -98,6 +103,7 @@ export type CollaboratorInput = z.infer<typeof collaboratorSchema>;
 export type UpdateCollaboratorInput = z.infer<typeof updateCollaboratorSchema>;
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type DeleteMeInput = z.infer<typeof deleteMeSchema>;
 export type NotificationSettingsInput = z.infer<typeof notificationSettingsSchema>;
 export type PushTokenInput = z.infer<typeof pushTokenSchema>;
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;

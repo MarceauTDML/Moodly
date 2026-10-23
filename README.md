@@ -89,3 +89,14 @@ npm run format:check
 ```
 
 Les tests automatisés couvrent notamment les invitations à usage unique, les rôles, le périmètre des équipes, le refus des comptes en attente, le contrat HTTP et l’anonymisation des réponses. Ils simulent Prisma et ne touchent pas votre base.
+
+### Tests d’intégration
+
+Ils tournent sur une vraie base PostgreSQL, `moodmap_test`, créée automatiquement dans le conteneur Docker du projet. La base de démonstration `moodmap` n’est jamais utilisée : un garde-fou refuse toute base dont le nom ne se termine pas par `_test`. Docker doit être démarré.
+
+```bash
+cd backend
+npm run test:integration
+```
+
+Ils vérifient ce que les tests simulés ne peuvent pas prouver : un seul vote accepté quand deux envois arrivent en même temps, l’absence de toute colonne reliant une réponse à son auteur, le masquage réel des journées sous le seuil et des votes du jour, l’usage unique des invitations et la révocation des sessions après un changement de mot de passe. Pour une autre base, définissez `TEST_DATABASE_URL`.

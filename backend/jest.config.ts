@@ -4,6 +4,8 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>/__tests__'],
   testMatch: ['**/*.test.ts'],
+  // Les tests d'intégration ont besoin de PostgreSQL : npm run test:integration.
+  testPathIgnorePatterns: ['/node_modules/', '/__tests__/integration/'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },

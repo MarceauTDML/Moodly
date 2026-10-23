@@ -8,6 +8,7 @@ import {
 import { submitMoodInputSchema } from '../services/checkin.schemas';
 import { errorMessage } from '../services/api.client';
 import { moodHistory } from '../services/moodHistory.storage';
+import { suggestsSupport } from '../utils/support.util';
 import { useAppSelector } from '../store';
 import type { CheckinMood, CheckinTag, MoodSubmission } from '../types/checkin.types';
 
@@ -29,6 +30,7 @@ export function useDailyCheckin() {
   const [confirmation, setConfirmation] = useState<MoodSubmission | null>(null);
   const [submittedDate, setSubmittedDate] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [supportSuggested, setSupportSuggested] = useState(false);
   const sending = useRef(false);
   const previousDate = useRef<string | undefined>(undefined);
   const status = today.currentData;
@@ -87,10 +89,13 @@ export function useDailyCheckin() {
     try {
       const result = await send(parsed.data).unwrap();
       // Copie personnelle, sur ce téléphone uniquement : le serveur n'en garde aucun lien.
-      if (userId)
-        await moodHistory
+      if (userId) {
+        const recorded = await moodHistory
           .record(userId, { date: result.date, mood: parsed.data.mood, tags: parsed.data.tags })
-          .catch(() => undefined);
+          .then(() => moodHistory.read(userId))
+          .catch(() => []);
+        setSupportSuggested(suggestsSupport(recorded, result.date));
+      }
       setSubmittedDate(result.date);
       setConfirmation(result);
       setModalVisible(true);
@@ -133,6 +138,7 @@ export function useDailyCheckin() {
     error,
     confirmation,
     modalVisible,
+    supportSuggested,
     closeConfirmation: () => setModalVisible(false),
     submit,
     refresh,

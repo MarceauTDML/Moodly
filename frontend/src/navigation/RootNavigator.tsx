@@ -19,6 +19,7 @@ import { ErrorState } from '../components/shared/ErrorState';
 import { ScreenContainer } from '../components/layout/ScreenContainer';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
+import { SupportScreen } from '../screens/settings/SupportScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const EmployeeHome = () => (
   <RoleGuard roles={['COLLABORATEUR']}>
@@ -79,6 +80,7 @@ export function RootNavigator() {
             )}
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Notifications" component={NotificationSettingsScreen} />
+            <Stack.Screen name="Support" component={SupportScreen} />
           </Stack.Group>
         ) : (
           <>

@@ -7,10 +7,14 @@ export function MoodSubmittedModal({
   visible,
   result,
   onClose,
+  suggestSupport = false,
+  onOpenSupport,
 }: {
   visible: boolean;
   result: MoodSubmission | null;
   onClose: () => void;
+  suggestSupport?: boolean;
+  onOpenSupport?: () => void;
 }) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -26,6 +30,15 @@ export function MoodSubmittedModal({
               {result?.title}
             </Text>
             <Text style={styles.message}>{result?.message}</Text>
+            {suggestSupport && onOpenSupport && (
+              <View style={styles.support}>
+                <Text style={styles.supportText}>
+                  Ces derniers jours ont l’air difficiles. Si tu en ressens le besoin, des personnes
+                  peuvent t’écouter, en toute confidentialité.
+                </Text>
+                <Button title="Voir les ressources d’aide" secondary onPress={onOpenSupport} />
+              </View>
+            )}
             <View style={{ width: '100%', marginTop: 10 }}>
               <Button title="Compris" onPress={onClose} />
             </View>
@@ -68,4 +81,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
   },
   message: { fontSize: 14, lineHeight: 23, textAlign: 'center', color: '#758095' },
+  support: { width: '100%', gap: 12, padding: 16, borderRadius: 16, backgroundColor: '#F3EFF9' },
+  supportText: { fontSize: 13, lineHeight: 20, color: '#202736' },
 });

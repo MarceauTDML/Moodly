@@ -11,7 +11,7 @@ export class ApiRequestError extends Error {
   }
 }
 interface RequestOptions<T> {
-  method?: 'GET' | 'POST' | 'PATCH';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   token?: string | null;
   signal?: AbortSignal;
@@ -71,6 +71,9 @@ export async function requestApi<T>(path: string, options: RequestOptions<T> = {
         ALREADY_ACTIVE: 'Ce compte est déjà actif.',
         TEAM_NOT_FOUND: 'Cette équipe n’est pas accessible. Choisissez une de vos équipes.',
         MULTIPLE_TEAMS: 'Ce compte appartient à plusieurs équipes. Contactez votre administrateur.',
+        INVALID_PASSWORD: 'Mot de passe incorrect.',
+        LAST_ADMIN:
+          'Vous êtes le dernier administrateur de l’entreprise. Nommez-en un autre avant de supprimer votre compte.',
         ACTIVE_EMAIL_CHANGE: 'L’adresse d’un compte actif ne peut pas être modifiée ici.',
       };
       const message =

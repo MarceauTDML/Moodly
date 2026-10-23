@@ -1,6 +1,11 @@
 import { baseApi } from './baseApi';
-import { profileSchema, notificationsSchema, teamsSchema } from '../../services/api.schemas';
-import type { NotificationSettings, Profile } from '../../types/user.types';
+import {
+  profileSchema,
+  notificationsSchema,
+  teamsSchema,
+  personalDataSchema,
+} from '../../services/api.schemas';
+import type { NotificationSettings, PersonalData, Profile } from '../../types/user.types';
 import type { Team } from '../../types/team.types';
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -16,6 +21,12 @@ export const usersApi = baseApi.injectEndpoints({
       { message: string },
       { currentPassword: string; newPassword: string }
     >({ query: (body) => ({ url: '/users/me/password', method: 'PATCH', body }) }),
+    personalData: build.query<PersonalData, void>({
+      query: () => ({ url: '/users/me/export', schema: personalDataSchema }),
+    }),
+    deleteAccount: build.mutation<void, { password: string }>({
+      query: (body) => ({ url: '/users/me', method: 'DELETE', body }),
+    }),
     notificationSettings: build.query<NotificationSettings, void>({
       query: () => ({ url: '/users/me/notifications', schema: notificationsSchema }),
       providesTags: ['Notifications'],
@@ -45,4 +56,6 @@ export const {
   useNotificationSettingsQuery,
   useUpdateNotificationsMutation,
   useTeamsQuery,
+  useLazyPersonalDataQuery,
+  useDeleteAccountMutation,
 } = usersApi;

@@ -130,3 +130,8 @@ export const evolutionSchema = z.object({
   best: bucket.nullable(),
   worst: bucket.nullable(),
 });
+// Export RGPD : seuls les champs affichés sont vérifiés, le reste est transmis tel quel.
+export const personalDataSchema = z.looseObject({
+  exportedAt: z.string(),
+  account: z.looseObject({ email: z.string() }),
+});

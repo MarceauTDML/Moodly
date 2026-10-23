@@ -6,7 +6,7 @@ import { refreshSession } from '../../services/session.client';
 import { signedOut, tokensRefreshed } from '../slices/authSlice';
 interface ApiArgs {
   url: string;
-  method?: 'GET' | 'POST' | 'PATCH';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   public?: boolean;
   schema?: z.ZodType;

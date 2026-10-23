@@ -6,6 +6,7 @@ import type {
   CollaboratorInput,
   UpdateCollaboratorInput,
   ChangePasswordInput,
+  DeleteMeInput,
   CreateUserInput,
   ListUsersQuery,
   NotificationSettingsInput,
@@ -59,6 +60,15 @@ export const usersController = {
   async changePassword(req: Request, res: Response) {
     await usersService.changePassword(req.user!.id, getBody<ChangePasswordInput>(req));
     sendSuccess(res, { message: 'Mot de passe modifié.' });
+  },
+
+  async deleteMe(req: Request, res: Response) {
+    await usersService.deleteMe(req.user!.id, getBody<DeleteMeInput>(req));
+    sendNoContent(res);
+  },
+
+  async exportMe(req: Request, res: Response) {
+    sendSuccess(res, await usersService.exportMe(req.user!.id));
   },
 
   async getNotifications(req: Request, res: Response) {

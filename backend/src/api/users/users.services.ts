@@ -6,12 +6,14 @@ import { isProd } from '../../config/env.config';
 import { generateResetToken } from '../../services/token.service';
 import type { CollaboratorInput, UpdateCollaboratorInput } from './users.validators';
 import type { AuthUser, PublicUser } from '../../types/auth.types';
+import { formatDay } from '../../utils/date.util';
 import { hashPassword, verifyPassword } from '../../utils/hash.util';
 import { ApiError } from '../../utils/response.util';
 import { usersRepo } from './users.repo';
 import type {
   ChangePasswordInput,
   CreateUserInput,
+  DeleteMeInput,
   ListUsersQuery,
   NotificationSettingsInput,
   PushTokenInput,
@@ -168,6 +170,53 @@ export const usersService = {
     await usersRepo.update(userId, {
       passwordHash: await hashPassword(newPassword),
     });
+  },
+
+  // RGPD, droit à l'effacement. Les réponses de mood ne sont liées à aucun compte :
+  // elles restent dans les statistiques d'équipe, sans pouvoir être rattachées à personne.
+  async deleteMe(userId: string, { password }: DeleteMeInput) {
+    const user = await getUserOrThrow(userId);
+    if (!(await verifyPassword(password, user.passwordHash))) {
+      throw ApiError.badRequest('Mot de passe incorrect', 'INVALID_PASSWORD');
+    }
+    if (user.role === 'ADMIN' && (await usersRepo.countAdmins(user.companyId)) <= 1) {
+      throw ApiError.conflict(
+        'Vous êtes le dernier administrateur de l’entreprise. Nommez un autre administrateur avant de supprimer votre compte.',
+        'LAST_ADMIN',
+      );
+    }
+    await usersRepo.delete(userId);
+  },
+
+  // RGPD, droit à la portabilité : tout ce que le serveur sait du compte, sans secret technique.
+  async exportMe(userId: string) {
+    const user = await usersRepo.findForExport(userId);
+    if (!user) throw ApiError.notFound('Utilisateur introuvable');
+    return {
+      exportedAt: new Date().toISOString(),
+      account: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      company: user.company.name,
+      teams: user.memberships.map((m) => ({ name: m.team.name, isLead: m.isLead, joinedAt: m.joinedAt })),
+      preferences: {
+        dailyReminderEnabled: user.dailyReminderEnabled,
+        emailNotificationsEnabled: user.emailNotificationsEnabled,
+        pushEnabled: Boolean(user.pushToken),
+      },
+      participationDays: user.checkins.map((c) => formatDay(c.date)),
+      moods: {
+        included: false,
+        reason:
+          'Tes réponses sont enregistrées sans aucun lien avec ton compte : personne ne peut les retrouver pour te les rendre, pas même Mood Map. Ton historique personnel existe uniquement sur ton téléphone.',
+      },
+    };
   },
 
   async getNotificationSettings(userId: string) {

@@ -58,6 +58,15 @@ Le compte reste **en attente d’activation** jusqu’à la création du mot de 
 
 La liste affiche les comptes réels, les compteurs actifs/en attente, une recherche par nom ou e-mail et les fiches modifiables. Un manager peut gérer uniquement les collaborateurs de ses équipes ; l’administrateur peut gérer ceux de son entreprise. La gestion des comptes n’affiche aucune réponse individuelle au mood.
 
+## Données personnelles (RGPD)
+
+Dans **Mon profil → Mes données**, chaque utilisateur peut :
+
+- **télécharger ses données** (droit à la portabilité) : profil, entreprise, équipes, préférences et jours de participation, au format JSON, via le partage du téléphone ;
+- **supprimer son compte** (droit à l’effacement), après confirmation par mot de passe. Le compte, les équipes, les préférences et les jours de participation sont supprimés. Les réponses au mood restent dans les statistiques d’équipe : elles n’ont jamais été reliées à leur auteur.
+
+Le dernier administrateur d’une entreprise ne peut pas supprimer son compte tant qu’un autre administrateur n’a pas été nommé.
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.

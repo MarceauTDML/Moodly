@@ -92,6 +92,28 @@ export const usersRepo = {
 
   delete: (id: string) => prisma.user.delete({ where: { id } }),
 
+  countAdmins: (companyId: string) => prisma.user.count({ where: { companyId, role: 'ADMIN' } }),
+
+  findForExport: (id: string) =>
+    prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        dailyReminderEnabled: true,
+        emailNotificationsEnabled: true,
+        pushToken: true,
+        company: { select: { name: true } },
+        memberships: { select: { isLead: true, joinedAt: true, team: { select: { name: true } } } },
+        checkins: { select: { date: true }, orderBy: { date: 'asc' } },
+      },
+    }),
+
   createWithMembership: (
     data: Prisma.UserUncheckedCreateInput,
     membership?: { teamId: string; isLead: boolean },

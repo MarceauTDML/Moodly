@@ -1,36 +1,25 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { ApiRequestError, requestApi } from './api.client';
 import { refreshSession } from './session.client';
 import type { SessionTokens } from '../types/auth.types';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+type NotificationsModule = typeof import('expo-notifications');
 
-export type PushAvailability =
-  'available' | 'web' | 'simulator' | 'expo-go-android' | 'missing-project-id';
+export type PushAvailability = 'available' | 'web' | 'simulator' | 'expo-go' | 'missing-project-id';
 
 // Identifiant du projet Expo, ajouté à app.json par « eas init ».
 const projectId = (): string | undefined =>
   Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 
+const isExpoGo = () => Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
 export const pushAvailability = (): PushAvailability => {
   if (Platform.OS === 'web') return 'web';
+  // Depuis le SDK 53, Expo Go n'embarque plus le module natif des notifications push.
+  if (isExpoGo()) return 'expo-go';
   if (!Device.isDevice) return 'simulator';
-  // Depuis le SDK 53, Expo Go ne reçoit plus les notifications à distance sur Android.
-  if (
-    Platform.OS === 'android' &&
-    Constants.executionEnvironment === ExecutionEnvironment.StoreClient
-  )
-    return 'expo-go-android';
   if (!projectId()) return 'missing-project-id';
   return 'available';
 };
@@ -38,14 +27,35 @@ export const pushAvailability = (): PushAvailability => {
 export const pushUnavailableMessages: Record<Exclude<PushAvailability, 'available'>, string> = {
   web: 'Les notifications push sont disponibles dans l’application mobile.',
   simulator: 'Les notifications push nécessitent un téléphone réel.',
-  'expo-go-android':
-    'Expo Go ne reçoit pas les notifications push sur Android. Utilisez une version de développement de l’application.',
+  'expo-go':
+    'Expo Go ne prend pas en charge les notifications push. Utilisez une version de développement de l’application.',
   'missing-project-id':
     'Notifications push non configurées : lancez « eas init » dans frontend/ pour associer le projet Expo.',
 };
 
+// expo-notifications n'est chargé qu'à la demande : dans Expo Go, le simple import fait planter
+// l'application, car son module natif n'y existe pas.
+let loaded: NotificationsModule | null | undefined;
+export function loadNotifications(): NotificationsModule | null {
+  if (loaded !== undefined) return loaded;
+  if (Platform.OS === 'web' || isExpoGo()) return (loaded = null);
+  const Notifications = require('expo-notifications') as NotificationsModule;
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+  return (loaded = Notifications);
+}
+
 // Demande l'autorisation seulement à l'action de l'utilisateur, jamais au démarrage.
 export async function requestDevicePushToken(): Promise<string> {
+  const Notifications = loadNotifications();
+  if (!Notifications || pushAvailability() !== 'available')
+    throw new Error('Les notifications push ne sont pas disponibles sur cet appareil.');
   if (Platform.OS === 'android')
     await Notifications.setNotificationChannelAsync('default', {
       name: 'Rappels',
@@ -60,7 +70,8 @@ export async function requestDevicePushToken(): Promise<string> {
 
 // Jeton de cet appareil, sans jamais afficher de demande d'autorisation.
 export async function currentDevicePushToken(): Promise<string | null> {
-  if (pushAvailability() !== 'available') return null;
+  const Notifications = loadNotifications();
+  if (!Notifications || pushAvailability() !== 'available') return null;
   if (!(await Notifications.getPermissionsAsync()).granted) return null;
   return (await Notifications.getExpoPushTokenAsync({ projectId: projectId() })).data;
 }

@@ -1,25 +1,29 @@
 import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
+import type { NotificationResponse } from 'expo-notifications';
 import type { RootStackParamList } from '../navigation/navigation.types';
-
-const useLastResponse =
-  Platform.OS === 'web' ? () => null : Notifications.useLastNotificationResponse;
+import { loadNotifications } from '../services/pushNotifications.client';
 
 // Toucher le rappel quotidien ouvre la saisie du mood. Si la navigation n'est pas encore
 // prête (application lancée par la notification), l'espace collaborateur s'ouvre déjà dessus.
+// Sans module de notifications (web, Expo Go), ce hook ne fait rien.
 export function useOpenCheckinFromNotification(
   navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>,
   enabled: boolean,
 ) {
-  const response = useLastResponse();
   const handled = useRef<string | null>(null);
   useEffect(() => {
-    if (!enabled || !response) return;
-    const { identifier, content } = response.notification.request;
-    if (handled.current === identifier || content.data?.screen !== 'DailyCheckin') return;
-    handled.current = identifier;
-    if (navigationRef.isReady()) navigationRef.navigate('Employee', { screen: 'DailyCheckin' });
-  }, [response, enabled, navigationRef]);
+    const Notifications = loadNotifications();
+    if (!enabled || !Notifications) return;
+    const open = (response: NotificationResponse | null) => {
+      if (!response) return;
+      const { identifier, content } = response.notification.request;
+      if (handled.current === identifier || content.data?.screen !== 'DailyCheckin') return;
+      handled.current = identifier;
+      if (navigationRef.isReady()) navigationRef.navigate('Employee', { screen: 'DailyCheckin' });
+    };
+    open(Notifications.getLastNotificationResponse());
+    const subscription = Notifications.addNotificationResponseReceivedListener(open);
+    return () => subscription.remove();
+  }, [enabled, navigationRef]);
 }

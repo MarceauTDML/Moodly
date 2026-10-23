@@ -8,11 +8,14 @@ import { Modal } from '../ui/Modal';
 import { useDeleteAccountMutation, useLazyPersonalDataQuery } from '../../store/api/usersApi';
 import { useAuth } from '../../hooks/useAuth';
 import { errorMessage } from '../../services/api.client';
+import { moodHistory } from '../../services/moodHistory.storage';
+import { useAppSelector } from '../../store';
 import { colors } from '../../theme/colors';
 
 // Droits RGPD : portabilité (export) et effacement (suppression du compte).
 export function MyDataCard() {
   const { signOut } = useAuth();
+  const userId = useAppSelector((s) => s.auth.session?.user.id);
   const [loadPersonalData, exportState] = useLazyPersonalDataQuery();
   const [deleteAccount, deleteState] = useDeleteAccountMutation();
   const [exportError, setExportError] = useState('');
@@ -24,7 +27,12 @@ export function MyDataCard() {
     setExportError('');
     try {
       const data = await loadPersonalData().unwrap();
-      await Share.share({ title: 'Mes données Mood Map', message: JSON.stringify(data, null, 2) });
+      // L'historique personnel n'existe que sur ce téléphone : il est ajouté à l'export ici.
+      const deviceHistory = userId ? await moodHistory.read(userId) : [];
+      await Share.share({
+        title: 'Mes données Mood Map',
+        message: JSON.stringify({ ...data, deviceHistory }, null, 2),
+      });
     } catch (e) {
       setExportError(errorMessage(e));
     }
@@ -42,6 +50,7 @@ export function MyDataCard() {
     }
     try {
       await deleteAccount({ password }).unwrap();
+      if (userId) await moodHistory.clear(userId).catch(() => undefined);
       closeConfirmation();
       signOut();
     } catch (e) {
@@ -53,8 +62,8 @@ export function MyDataCard() {
     <Card>
       <Text style={{ fontSize: 18, fontFamily: 'Inter-Medium' }}>Mes données</Text>
       <Text style={{ color: colors.muted }}>
-        Téléchargez tout ce que Mood Map sait de votre compte. Vos réponses au mood n’y figurent pas
-        : elles sont enregistrées sans lien avec vous.
+        Téléchargez tout ce que Mood Map sait de votre compte, avec l’historique enregistré sur ce
+        téléphone. Le serveur, lui, ne conserve aucune réponse liée à vous.
       </Text>
       {exportError && (
         <Text accessibilityRole="alert" style={{ color: colors.danger }}>
@@ -71,8 +80,8 @@ export function MyDataCard() {
       <Modal visible={confirming} title="Supprimer mon compte" onClose={closeConfirmation}>
         <View style={{ gap: 12 }}>
           <Text>
-            Votre compte, vos équipes, vos préférences et vos jours de participation seront
-            supprimés définitivement.
+            Votre compte, vos équipes, vos préférences, vos jours de participation et l’historique
+            de ce téléphone seront supprimés définitivement.
           </Text>
           <Text style={{ color: colors.muted }}>
             Vos réponses passées restent dans les statistiques de l’équipe : elles sont anonymes et

@@ -5,6 +5,7 @@ import {
 import type { EmployeeStackParamList } from './navigation.types';
 import { DailyCheckinScreen } from '../screens/employee/DailyCheckinScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { MyHistoryScreen } from '../screens/employee/MyHistoryScreen';
 
 const Stack = createNativeStackNavigator<EmployeeStackParamList>();
 function EmployeeSettings({
@@ -17,6 +18,7 @@ export function EmployeeStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DailyCheckin" component={DailyCheckinScreen} />
       <Stack.Screen name="EmployeeSettings" component={EmployeeSettings} />
+      <Stack.Screen name="MyHistory" component={MyHistoryScreen} />
     </Stack.Navigator>
   );
 }

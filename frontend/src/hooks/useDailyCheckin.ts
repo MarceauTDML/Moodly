@@ -7,6 +7,8 @@ import {
 } from '../store/api/moodsApi';
 import { submitMoodInputSchema } from '../services/checkin.schemas';
 import { errorMessage } from '../services/api.client';
+import { moodHistory } from '../services/moodHistory.storage';
+import { useAppSelector } from '../store';
 import type { CheckinMood, CheckinTag, MoodSubmission } from '../types/checkin.types';
 
 export function useDailyCheckin() {
@@ -16,6 +18,7 @@ export function useDailyCheckin() {
     refetchOnMountOrArgChange: true,
   });
   const [send, mutation] = useSubmitMoodMutation();
+  const userId = useAppSelector((s) => s.auth.session?.user.id);
   // Le brouillon reste dans ce composant : aucune persistance du mood ou du commentaire.
   const [mood, setMood] = useState<CheckinMood | null>(null);
   const [tags, setTags] = useState<CheckinTag[]>([]);
@@ -83,6 +86,11 @@ export function useDailyCheckin() {
     setError('');
     try {
       const result = await send(parsed.data).unwrap();
+      // Copie personnelle, sur ce téléphone uniquement : le serveur n'en garde aucun lien.
+      if (userId)
+        await moodHistory
+          .record(userId, { date: result.date, mood: parsed.data.mood, tags: parsed.data.tags })
+          .catch(() => undefined);
       setSubmittedDate(result.date);
       setConfirmation(result);
       setModalVisible(true);

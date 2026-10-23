@@ -67,6 +67,10 @@ Dans **Mon profil → Mes données**, chaque utilisateur peut :
 
 Le dernier administrateur d’une entreprise ne peut pas supprimer son compte tant qu’un autre administrateur n’a pas été nommé.
 
+## Historique personnel
+
+Le collaborateur retrouve ses 30 derniers jours dans **Mon espace → Mon historique**. Cet historique est enregistré **uniquement sur son téléphone**, dans le stockage chiffré (SecureStore), au moment où il envoie son mood : le serveur ne reçoit rien de plus et ne peut toujours pas relier une réponse à son auteur. Il conserve 12 mois, sans les commentaires, et reste séparé pour chaque compte utilisé sur le téléphone. Il est ajouté à l’export des données, effacé avec le compte, et peut être effacé à tout moment. Sur le web, rien n’est conservé.
+
 ## Invitations par e-mail ou en local
 
 Pour un envoi réel, renseignez les paramètres `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` et `MAIL_FROM` de `backend/.env` avec votre configuration de messagerie.
